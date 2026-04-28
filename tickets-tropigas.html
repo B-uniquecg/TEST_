@@ -1,0 +1,3131 @@
+<!DOCTYPE html>
+<html lang="es-PR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TROPIGAS PR · Portal Operativo UCG</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper: #FFFFFF;
+    --paper-2: #F4F5F7;
+    --paper-3: #E5E7EB;
+    --ink: #111827;
+    --ink-2: #374151;
+    --ink-3: #4B5563;
+    --ink-4: #6B7280;
+    --ink-5: #9CA3AF;
+    --line: #E5E7EB;
+    --line-soft: #F3F4F6;
+    --tg-blue: #0F224A;
+    --tg-red: #E30512;
+    --tg-red-dark: #B3040E;
+    --st-new: #E30512;
+    --st-prog: #D97706;
+    --st-done: #10B981;
+    --st-closed: #6B7280;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--paper-2);
+    color: var(--ink);
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .mono { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--paper-2); }
+  ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 4px; }
+
+  .app {
+    display: grid;
+    grid-template-rows: 64px auto 1fr 22px;
+    grid-template-areas: "topbar" "infobar" "main" "statusbar";
+    height: 100vh;
+  }
+
+  .topbar {
+    grid-area: topbar;
+    background: var(--tg-blue);
+    color: var(--paper);
+    display: flex;
+    align-items: stretch;
+    border-bottom: 4px solid var(--tg-red);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    background: rgba(0, 0, 0, 0.18);
+    min-width: 280px;
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    background: var(--tg-red);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+    margin-right: 14px;
+    border: 2px solid var(--paper);
+    border-radius: var(--radius);
+    flex-shrink: 0;
+  }
+  .brand-text { line-height: 1.1; }
+  .brand-title {
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: 0.02em;
+    color: var(--paper);
+  }
+  .brand-title .pr-flag {
+    display: inline-block;
+    width: 16px;
+    height: 11px;
+    background: linear-gradient(to bottom,
+      #E30512 0%, #E30512 20%,
+      white 20%, white 40%,
+      #E30512 40%, #E30512 60%,
+      white 60%, white 80%,
+      #E30512 80%, #E30512 100%);
+    position: relative;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .brand-title .pr-flag::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 0; height: 0;
+    border-left: 7px solid #0F224A;
+    border-top: 5.5px solid transparent;
+    border-bottom: 5.5px solid transparent;
+  }
+  .brand-sub {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-5);
+    margin-top: 3px;
+    font-weight: 500;
+  }
+
+  .topbar-meta {
+    display: flex;
+    align-items: stretch;
+    border-left: 1px solid rgba(255,255,255,0.1);
+  }
+  .meta-cell {
+    padding: 12px 20px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .meta-cell .lbl {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-5);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .meta-cell .val {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--paper);
+  }
+  .meta-cell .val.live {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .meta-cell .val.live::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: #4ADE80;
+    border-radius: 50%;
+    animation: blink 1.6s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.4; } }
+
+  .topbar-spacer { flex: 1; }
+
+  .topbar-search {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    min-width: 280px;
+  }
+  .topbar-search::before {
+    content: '/';
+    color: var(--tg-red);
+    font-weight: 700;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+  .topbar-search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 6px 0;
+    font-size: 12px;
+    color: var(--paper);
+    letter-spacing: 0.02em;
+  }
+  .topbar-search input::placeholder {
+    color: var(--ink-5);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .topbar-search input:focus { outline: none; }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+  }
+  .btn-action {
+    background: var(--tg-red);
+    color: var(--paper);
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid var(--tg-red-dark);
+    border-radius: 4px;
+    transition: all 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-action:hover { background: var(--tg-red-dark); }
+  .btn-action::before {
+    content: '+';
+    font-size: 14px;
+    line-height: 1;
+    font-weight: 700;
+  }
+  .topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: var(--radius);
+    transition: background 0.1s;
+  }
+  .topbar-user:hover { background: rgba(255,255,255,0.05); }
+  .user-init {
+    width: 28px; height: 28px;
+    background: var(--paper);
+    color: var(--tg-blue);
+    font-weight: 700;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .user-info { line-height: 1.2; text-align: left; }
+  .user-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--paper);
+  }
+  .user-role {
+    font-size: 10px;
+    color: var(--ink-5);
+  }
+
+  .infobar {
+    grid-area: infobar;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: stretch;
+  }
+  .tab {
+    padding: 0 22px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-right: 1px solid var(--line-soft);
+    transition: all 0.1s;
+    position: relative;
+  }
+  .tab:hover { background: var(--paper-2); color: var(--ink); }
+  .tab.on { background: var(--tg-blue); color: var(--paper); }
+  .tab.on::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    bottom: -1px;
+    height: 3px;
+    background: var(--tg-red);
+  }
+  .tab .tab-num { color: var(--tg-red); font-weight: 700; font-size: 10px; }
+  .tab.on .tab-num { color: #FCA5A5; }
+  .tab .tab-count {
+    background: var(--paper-2);
+    color: var(--ink-3);
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 12px;
+    margin-left: 2px;
+  }
+  .tab.on .tab-count { background: var(--tg-red); color: var(--paper); }
+
+  .tab.crumb { cursor: pointer; color: var(--ink-3); }
+  .tab.crumb:hover { color: var(--tg-red); }
+  .tab.crumb::after {
+    content: '›';
+    margin-left: 14px;
+    color: var(--ink-4);
+    font-size: 14px;
+  }
+  .tab.crumb-current {
+    background: var(--tg-blue);
+    color: var(--paper);
+    cursor: default;
+  }
+  .tab.crumb-current::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 3px;
+    background: var(--tg-red);
+    margin: 0;
+  }
+
+  .infobar-spacer { flex: 1; }
+  .infobar-section-title {
+    padding: 0 24px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    border-left: 1px solid var(--line-soft);
+  }
+  .infobar-section-title b { color: var(--ink); font-weight: 700; margin-left: 6px; }
+
+  .main {
+    grid-area: main;
+    overflow: hidden;
+    position: relative;
+  }
+  .view {
+    display: none;
+    height: 100%;
+    overflow-y: auto;
+  }
+  .view.on { display: block; }
+
+  .dash {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto 1fr;
+    gap: 16px;
+    height: 100%;
+  }
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-head {
+    background: var(--paper);
+    color: var(--tg-blue);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .panel-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .panel-meta {
+    font-size: 10px;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .panel-body { padding: 16px; flex: 1; overflow: hidden; }
+  .panel-body.no-pad { padding: 0; }
+
+  .hero-stats {
+    grid-column: 1 / 2; grid-row: 1 / 2;
+    background: var(--tg-blue);
+    color: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    overflow: hidden;
+  }
+  .hs-cell {
+    padding: 16px 18px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 110px;
+  }
+  .hs-cell:last-child { border-right: none; }
+  .hs-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hs-lbl::before {
+    content: '';
+    width: 4px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+  }
+  .hs-cell.alert .hs-lbl { color: #FCA5A5; }
+  .hs-cell.alert .hs-lbl::before { background: var(--tg-red); }
+  .hs-num {
+    font-weight: 700;
+    line-height: 1;
+    color: var(--paper);
+  }
+  .hs-cell.hero .hs-num { font-size: 56px; color: #FCA5A5; }
+  .hs-cell:not(.hero) .hs-num { font-size: 36px; }
+  .hs-foot {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .hs-foot .delta { font-weight: 600; }
+  .hs-foot .delta.up { color: #4ADE80; }
+
+  .sla-panel { grid-column: 2 / 3; grid-row: 1 / 3; overflow: hidden; }
+  .sla-head .panel-title { color: var(--tg-red); }
+  .sla-list { overflow-y: auto; flex: 1; }
+  .sla-empty { padding: 40px 16px; text-align: center; }
+  .sla-empty-icon {
+    font-size: 36px;
+    color: var(--st-done);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .sla-empty-text {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .sla-row {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--paper-3);
+    cursor: pointer;
+    transition: background 0.08s;
+    position: relative;
+  }
+  .sla-row:hover { background: var(--paper-2); }
+  .sla-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+  }
+  .sla-row.vencido::before { background: var(--tg-red); }
+  .sla-row.riesgo::before { background: #B86E00; }
+  .sla-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .sla-id {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .sla-id::before {
+    content: '#';
+    color: var(--ink-4);
+    font-weight: 400;
+    margin-right: 1px;
+  }
+  .sla-status-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 6px;
+    border-radius: 4px;
+  }
+  .sla-row.vencido .sla-status-tag { background: var(--tg-red); color: var(--paper); }
+  .sla-row.riesgo .sla-status-tag { background: #FEF3C7; color: #B86E00; }
+  .sla-client {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-2);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sla-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.04em;
+  }
+  .sla-bar {
+    height: 6px;
+    background: var(--paper-3);
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px;
+  }
+  .sla-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 3px;
+  }
+
+  .activity { grid-column: 1 / 2; grid-row: 2 / 3; overflow: hidden; }
+  .activity-chart {
+    width: 100%;
+    height: 180px;
+    display: block;
+  }
+  .activity-legend {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px 12px;
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.05em;
+    border-top: 1px dashed var(--line-soft);
+  }
+  .legend-keys { display: flex; gap: 18px; }
+  .legend-key { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-key .swatch { width: 10px; height: 10px; display: inline-block; border-radius: 2px;}
+  .legend-key .swatch.created { background: var(--tg-blue); }
+  .legend-key .swatch.resolved { background: var(--tg-red); }
+
+  .donut-row {
+    grid-column: 1 / 3;
+    grid-row: 3 / 4;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .donut-panel { overflow: hidden; }
+  .donut-body {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+  }
+  .donut-svg { width: 100px; height: 100px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 6px; }
+  .donut-leg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .donut-leg .swatch { width: 10px; height: 10px; flex-shrink: 0; border-radius: 2px;}
+  .donut-leg .lbl {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .donut-leg .val {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .recent { grid-column: 1 / 3; grid-row: 4 / 5; overflow: hidden; }
+  .recent-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .recent-table thead th {
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .recent-table tbody tr {
+    border-bottom: 1px solid var(--paper-3);
+    cursor: pointer;
+    transition: background 0.08s;
+  }
+  .recent-table tbody tr:hover { background: var(--paper-2); }
+  .recent-table td {
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--ink-2);
+    vertical-align: middle;
+  }
+  .recent-time { color: var(--ink-4); }
+  .recent-action {
+    color: var(--tg-red);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+  .recent-id { color: var(--ink); font-weight: 700; }
+
+  .tickets-view {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+  }
+  .toolbar-row {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: stretch;
+    flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .toolbar-segment {
+    display: flex;
+    border-right: 1px solid var(--line);
+  }
+  .toolbar-segment:last-child { border-right: none; }
+  .filt-btn {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-right: 1px solid var(--line-soft);
+    transition: all 0.08s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filt-btn:last-child { border-right: none; }
+  .filt-btn:hover { background: var(--paper-2); color: var(--ink); }
+  .filt-btn.on { background: var(--tg-blue); color: var(--paper); }
+  .filt-btn .filt-c { color: var(--ink-4); font-size: 11px; padding: 2px 6px; background: var(--paper-2); border-radius: 12px;}
+  .filt-btn.on .filt-c { color: var(--tg-blue); background: var(--paper); }
+
+  .toolbar-search {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+  }
+  .toolbar-search::before {
+    content: '/';
+    color: var(--tg-red);
+    font-weight: 700;
+    margin-right: 10px;
+  }
+  .toolbar-search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px 0;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .toolbar-search input::placeholder {
+    color: var(--ink-4);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  .toolbar-search input:focus { outline: none; }
+
+  .results-info {
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-left: 1px solid var(--line);
+  }
+  .results-info b { color: var(--ink); font-weight: 600; }
+
+  .table-wrap {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    flex: 1;
+    overflow: auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  table.tickets {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.tickets thead { position: sticky; top: 0; z-index: 1; }
+  table.tickets thead th {
+    background: var(--paper-2);
+    color: var(--ink-3);
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+  }
+  table.tickets tbody tr {
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+    transition: background 0.05s;
+  }
+  table.tickets tbody tr:hover { background: var(--paper-2); }
+  table.tickets td {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--ink-2);
+    vertical-align: middle;
+  }
+  .col-idx {
+    color: var(--ink-4);
+    font-size: 11px;
+    font-weight: 600;
+    width: 36px;
+    text-align: right;
+  }
+  .col-id-mono {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .col-sf {
+    color: var(--ink-4);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .client-cell {
+    font-weight: 500;
+    color: var(--ink);
+    max-width: 260px;
+  }
+  .client-cell .meta {
+    font-size: 11px;
+    color: var(--ink-4);
+    margin-top: 2px;
+    letter-spacing: 0.02em;
+  }
+  .problem-cell {
+    color: var(--ink-2);
+    max-width: 280px;
+  }
+  .problem-cell .reason {
+    font-size: 12px;
+    color: var(--ink-4);
+    margin-top: 2px;
+  }
+
+  .imp-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  .imp-Alta { background: #FEE2E2; color: var(--tg-red); }
+  .imp-Media { background: #FEF3C7; color: #D97706; }
+  .imp-Baja { background: #E5E7EB; color: var(--ink-3); }
+
+  .stat-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .stat-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+  }
+  .stat-Recibido { color: var(--st-new); }
+  .stat-EnProgreso { color: var(--st-prog); }
+  .stat-Resuelto { color: var(--st-done); }
+  .stat-Cerrado { color: var(--st-closed); }
+
+  .col-time {
+    font-size: 12px;
+    color: var(--ink-4);
+    white-space: nowrap;
+  }
+
+  .detail-view {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+  }
+
+  .detail-banner {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 24px 32px 0;
+  }
+
+  .detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .detail-title-block { flex: 1; min-width: 0; }
+  .detail-id-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .detail-id-mono {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--paper);
+    background: var(--tg-blue);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+  }
+  .detail-sf-mono {
+    font-size: 12px;
+    color: var(--ink-4);
+    letter-spacing: 0.04em;
+  }
+  .detail-sf-mono b { color: var(--ink-2); font-weight: 600; }
+  .detail-h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .detail-h-sub {
+    font-size: 12px;
+    color: var(--ink-4);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .detail-h-sub b { color: var(--ink-2); font-weight: 600; }
+
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-d {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-2);
+    border-radius: var(--radius);
+    transition: all 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-d:hover { background: var(--paper-2); color: var(--ink); border-color: var(--ink-4); }
+  .btn-d.primary { background: var(--tg-red); color: var(--paper); border-color: var(--tg-red-dark); }
+  .btn-d.primary:hover { background: var(--tg-red-dark); color: var(--paper); }
+  .btn-d.danger { color: var(--tg-red); border-color: #FCA5A5; }
+  .btn-d.danger:hover { background: #FEF2F2; color: var(--tg-red-dark); border-color: var(--tg-red); }
+
+  .detail-tabs {
+    display: flex;
+    border-top: 1px solid var(--line-soft);
+    margin: 0 -32px;
+    padding: 0 32px;
+    gap: 0;
+  }
+  .d-tab {
+    padding: 12px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+  .d-tab:hover { color: var(--ink-2); background: var(--paper-2); }
+  .d-tab.on {
+    color: var(--tg-blue);
+    border-bottom-color: var(--tg-red);
+    background: var(--paper);
+    font-weight: 700;
+  }
+  .d-tab .d-tab-num { color: var(--tg-red); font-size: 10px; }
+  .d-tab .d-tab-count {
+    background: var(--paper-3);
+    color: var(--ink-3);
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 2px;
+    border-radius: 12px;
+  }
+  .d-tab.on .d-tab-count { background: var(--tg-blue); color: var(--paper); }
+
+  .detail-body {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    overflow: hidden;
+    background: var(--paper-2);
+    border-top: 1px solid var(--line-soft);
+  }
+  .detail-main {
+    overflow-y: auto;
+    padding: 24px 32px;
+  }
+  .detail-side {
+    overflow-y: auto;
+    background: var(--paper);
+    border-left: 1px solid var(--line);
+  }
+
+  .d-section {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .d-section:last-child { margin-bottom: 0; }
+  .d-section-head {
+    background: var(--paper);
+    color: var(--tg-blue);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .d-section-head .d-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .d-section-head .d-section-meta {
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+  .d-section-body { padding: 20px; }
+
+  .prop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .prop-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
+  .prop {
+    padding: 0;
+  }
+  .prop-k {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 6px;
+  }
+  .prop-v {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .prop-v.mono {
+    font-size: 13px;
+  }
+  .prop-v.muted { color: var(--ink-4); font-style: italic; }
+  .prop-v.address { font-size: 13px; line-height: 1.5; }
+
+  .desc-block {
+    background: var(--paper-2);
+    border-left: 4px solid var(--tg-red);
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  .solution-block {
+    background: var(--tg-blue);
+    color: var(--paper);
+    padding: 24px;
+    border-left: 4px solid #10B981;
+    margin-bottom: 24px;
+    border-radius: var(--radius);
+  }
+  .solution-block .sb-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #10B981;
+    margin-bottom: 12px;
+  }
+  .solution-block .sb-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--paper);
+    white-space: pre-wrap;
+  }
+  .solution-block.empty {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink-4);
+    color: var(--ink-3);
+  }
+  .solution-block.empty .sb-label { color: var(--ink-4); }
+  .solution-block.empty .sb-text {
+    color: var(--ink-4);
+    font-style: italic;
+    font-size: 14px;
+  }
+
+  .resolution-form {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .resolution-form-head {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tg-blue);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .resolution-form textarea {
+    width: 100%;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+    min-height: 120px;
+    resize: vertical;
+  }
+  .resolution-form textarea:focus {
+    outline: none;
+    border-color: var(--tg-red);
+    box-shadow: 0 0 0 3px rgba(227, 5, 18, 0.1);
+  }
+  .resolution-form .rf-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+  }
+  .rf-hint {
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.02em;
+  }
+  .rf-actions { display: flex; gap: 8px; }
+
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .comment {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .comment-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .comment-author {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .comment-author .ca-avatar {
+    width: 26px; height: 26px;
+    background: var(--tg-blue);
+    color: var(--paper);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
+  }
+  .comment-time {
+    font-size: 11px;
+    color: var(--ink-4);
+  }
+  .comment-body {
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .comments-empty {
+    background: var(--paper);
+    border: 1px dashed var(--ink-4);
+    border-radius: var(--radius);
+    padding: 40px 20px;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 24px;
+  }
+  .comment-composer {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .comment-composer-head {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tg-blue);
+    margin-bottom: 12px;
+  }
+  .comment-composer textarea {
+    width: 100%;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 90px;
+    resize: vertical;
+  }
+  .comment-composer textarea:focus {
+    outline: none;
+    border-color: var(--tg-red);
+    box-shadow: 0 0 0 3px rgba(227, 5, 18, 0.1);
+  }
+  .comment-composer-foot {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+
+  .docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .doc-item {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .doc-item:hover {
+    border-color: var(--tg-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  .doc-icon {
+    width: 48px; height: 48px;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .doc-icon.pdf { background: #FEE2E2; color: var(--tg-red); border-color: #FCA5A5; }
+  .doc-icon.img { background: #DBEAFE; color: var(--tg-blue); border-color: #93C5FD; }
+  .doc-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .doc-meta {
+    font-size: 11px;
+    color: var(--ink-4);
+    display: flex;
+    justify-content: space-between;
+  }
+  .docs-empty {
+    background: var(--paper);
+    border: 1px dashed var(--ink-4);
+    border-radius: var(--radius);
+    padding: 40px 20px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .docs-empty-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 16px;
+    background: var(--paper-2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-4);
+  }
+  .docs-empty-text {
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .upload-zone {
+    background: var(--paper);
+    border: 2px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .upload-zone:hover {
+    border-color: var(--tg-blue);
+    background: var(--paper-2);
+  }
+  .upload-zone .uz-icon {
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--ink-4);
+    margin-bottom: 8px;
+  }
+  .upload-zone:hover .uz-icon { color: var(--tg-blue); }
+  .upload-zone .uz-text {
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .upload-zone .uz-hint {
+    font-size: 11px;
+    color: var(--ink-4);
+    margin-top: 6px;
+  }
+
+  .timeline {
+    border-left: 2px solid var(--line);
+    padding-left: 0;
+    margin-left: 12px;
+  }
+  .tl-event {
+    position: relative;
+    padding: 16px 0 16px 28px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .tl-event:last-child { border-bottom: none; }
+  .tl-event::before {
+    content: '';
+    position: absolute;
+    left: -7px; top: 20px;
+    width: 12px; height: 12px;
+    background: var(--paper);
+    border: 2px solid var(--ink-3);
+    border-radius: 50%;
+  }
+  .tl-event.creation::before { background: var(--tg-red); border-color: var(--tg-red); }
+  .tl-event.status::before { background: var(--tg-blue); border-color: var(--tg-blue); }
+  .tl-event.resolution::before { background: var(--st-done); border-color: var(--st-done); }
+  .tl-event-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .tl-action {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .tl-time {
+    font-size: 12px;
+    color: var(--ink-4);
+  }
+  .tl-detail {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .tl-detail b { font-weight: 600; }
+  .tl-actor {
+    font-size: 11px;
+    color: var(--ink-4);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .side-block {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .side-block:last-child { border-bottom: none; }
+  .side-block-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tg-blue);
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .side-prop {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 10px;
+    font-size: 13px;
+    padding: 8px 0;
+  }
+  .side-prop-k { color: var(--ink-4); }
+  .side-prop-v {
+    color: var(--ink);
+    font-weight: 500;
+    word-break: break-word;
+  }
+  .side-status-pick {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .side-status-btn {
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink-3);
+    transition: all 0.1s;
+  }
+  .side-status-btn:hover { background: var(--paper-2); color: var(--ink); border-color: var(--ink-4); }
+  .side-status-btn.on {
+    background: var(--tg-blue);
+    color: var(--paper);
+    border-color: var(--tg-blue);
+  }
+  .sla-meter { margin-top: 12px; }
+  .sla-meter-bar {
+    height: 8px;
+    background: var(--paper-3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .sla-meter-fill { height: 100%; border-radius: 4px; }
+  .sla-meter-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--ink-4);
+  }
+  .sla-meter-info .status-text { font-weight: 600; }
+  .sla-meter-info .status-text.vencido { color: var(--tg-red); }
+  .sla-meter-info .status-text.riesgo { color: #D97706; }
+  .sla-meter-info .status-text.ok { color: var(--st-done); }
+
+  .modal-back {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 100;
+    padding: 40px 24px;
+    overflow-y: auto;
+  }
+  .modal-back.show { display: flex; }
+  .modal {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 920px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 80px);
+  }
+  .modal-head {
+    background: var(--tg-blue);
+    color: var(--paper);
+    padding: 16px 24px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 4px solid var(--tg-red);
+    flex-shrink: 0;
+  }
+  .modal-title { display: flex; align-items: center; gap: 16px; }
+  .modal-title .doc-tag {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--paper);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .modal-title h2 {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .modal-title .num {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .modal-close {
+    width: 32px; height: 32px;
+    background: transparent;
+    border: none;
+    color: var(--paper);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border-radius: 50%;
+  }
+  .modal-close:hover { background: rgba(255, 255, 255, 0.1); }
+  .modal-body { overflow-y: auto; flex: 1; padding: 24px; }
+
+  .form-section {
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
+  .form-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tg-blue);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .form-section-title .num {
+    background: var(--tg-blue);
+    color: var(--paper);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  .form-grid .span-2 { grid-column: span 2; }
+  .form-grid .span-3 { grid-column: span 3; }
+  .ff label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  .ff label .req { color: var(--tg-red); }
+  .ff label .hint {
+    font-weight: 400;
+    color: var(--ink-4);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 6px;
+    font-size: 11px;
+  }
+  .ff input[type="text"],
+  .ff input[type="email"],
+  .ff input[type="tel"],
+  .ff select,
+  .ff textarea {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--ink);
+    transition: all 0.2s;
+  }
+  .ff input:focus, .ff select:focus, .ff textarea:focus {
+    outline: none;
+    border-color: var(--tg-blue);
+    box-shadow: 0 0 0 3px rgba(15, 34, 74, 0.1);
+  }
+  .ff textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .ff select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%236B7280'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .ff .field-readonly {
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  .seg-pick {
+    display: flex;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .seg-pick button {
+    flex: 1;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
+    border-right: 1px solid var(--line);
+    transition: all 0.1s;
+  }
+  .seg-pick button:last-child { border-right: none; }
+  .seg-pick button:hover { background: var(--paper-2); color: var(--ink); }
+  .seg-pick button.on { background: var(--tg-blue); color: var(--paper); }
+
+  .modal-foot {
+    background: var(--paper-2);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 8px 8px;
+  }
+  .foot-meta {
+    font-size: 11px;
+    color: var(--ink-4);
+    letter-spacing: 0.05em;
+  }
+  .foot-actions { display: flex; gap: 12px; }
+  .btn {
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+  }
+  .btn-save { background: var(--tg-red); color: var(--paper); border-color: var(--tg-red-dark); }
+  .btn-save:hover { background: var(--tg-red-dark); }
+  .btn-cancel { background: var(--paper); color: var(--ink-3); border-color: var(--line); }
+  .btn-cancel:hover { background: var(--paper-3); color: var(--ink); }
+
+  .statusbar {
+    grid-area: statusbar;
+    background: var(--tg-blue);
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    gap: 24px;
+  }
+  .sb-item { display: inline-flex; align-items: center; gap: 8px; }
+  .sb-item b { color: var(--paper); font-weight: 500; }
+  .sb-spacer { flex: 1; }
+  .sb-item .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4ADE80;
+    animation: blink 1.6s infinite;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 38px;
+    right: 24px;
+    background: var(--ink);
+    color: var(--paper);
+    border-left: 4px solid var(--tg-red);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .toast.show { transform: none; opacity: 1; }
+  .toast::before {
+    content: '✓';
+    color: #4ADE80;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .toast.error::before { content: '!'; color: #FCA5A5; }
+
+  @media (max-width: 1100px) {
+    .dash { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto auto; }
+    .hero-stats { grid-column: 1 / -1; grid-row: 1; }
+    .sla-panel { grid-column: 1 / -1; grid-row: 2; }
+    .activity { grid-column: 1 / -1; grid-row: 3; }
+    .donut-row { grid-column: 1 / -1; grid-row: 4; }
+    .recent { grid-column: 1 / -1; grid-row: 5; }
+    .detail-body { grid-template-columns: 1fr; }
+    .detail-side { border-left: none; border-top: 1px solid var(--line); }
+    .docs-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 760px) {
+    .topbar-meta { display: none; }
+    .topbar-search { display: none; }
+    .brand { min-width: auto; }
+    .topbar-actions { padding: 0 10px; }
+    .hero-stats { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .span-2, .form-grid .span-3 { grid-column: span 1; }
+    .donut-row { grid-template-columns: 1fr; }
+    .toolbar-row { flex-direction: column; }
+    .toolbar-segment { border-right: none; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .toolbar-search { border-bottom: none; }
+    .docs-grid { grid-template-columns: 1fr; }
+    .prop-grid, .prop-grid.three-col { grid-template-columns: 1fr; }
+    .detail-tabs { overflow-x: auto; white-space: nowrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div class="brand-text">
+        <div class="brand-title">TROPIGAS<span class="pr-flag"></span></div>
+        <div class="brand-sub">Portal Operativo · UCG</div>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <div class="meta-cell">
+        <div class="lbl">Sistema</div>
+        <div class="val live">Operativo</div>
+      </div>
+      <div class="meta-cell">
+        <div class="lbl">Fecha</div>
+        <div class="val" id="metaDate">—</div>
+      </div>
+      <div class="meta-cell">
+        <div class="lbl">Hora AST</div>
+        <div class="val mono" id="metaClock">--:--</div>
+      </div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-search">
+      <input type="text" id="globalSearch" placeholder="Buscar ticket, cliente, EMAS, SF" />
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-action" onclick="openModal()">Nuevo Ticket</button>
+      <button class="topbar-user">
+        <div class="user-init">AC</div>
+        <div class="user-info">
+          <div class="user-name">A. CASTRO</div>
+          <div class="user-role">Atención al Cliente</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <div class="infobar" id="infobar">
+    <button class="tab on" id="tab-dashboard" onclick="switchView('dashboard')">
+      <span class="tab-num">[01]</span>Dashboard
+    </button>
+    <button class="tab" id="tab-tickets" onclick="switchView('tickets')">
+      <span class="tab-num">[02]</span>Gestión de Tickets
+      <span class="tab-count mono" id="tabCount">00</span>
+    </button>
+    <div class="infobar-spacer"></div>
+    <div class="infobar-section-title">
+      Sesión: <b>A. Castro</b>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="view on" id="view-dashboard">
+      <div class="dash">
+        <div class="hero-stats">
+          <div class="hs-cell hero alert">
+            <div class="hs-lbl">Sin atender</div>
+            <div class="hs-num mono" id="kpiNew">00</div>
+            <div class="hs-foot"><span>Recibidos · esperando triage</span></div>
+          </div>
+          <div class="hs-cell">
+            <div class="hs-lbl">En curso</div>
+            <div class="hs-num mono" id="kpiProg">00</div>
+            <div class="hs-foot"><span>Trabajando</span></div>
+          </div>
+          <div class="hs-cell">
+            <div class="hs-lbl">Cerrados hoy</div>
+            <div class="hs-num mono" id="kpiDone">00</div>
+            <div class="hs-foot"><span>Resueltos</span></div>
+          </div>
+          <div class="hs-cell">
+            <div class="hs-lbl">Total mes</div>
+            <div class="hs-num mono" id="kpiTotal">00</div>
+            <div class="hs-foot">
+              <span>SLA cumplido</span>
+              <span class="delta up">94%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel sla-panel">
+          <div class="panel-head sla-head">
+            <span class="panel-title">SLA · Crítico / Vencido</span>
+            <span class="panel-meta">tiempo restante</span>
+          </div>
+          <div class="sla-list" id="slaList"></div>
+        </div>
+
+        <div class="panel activity">
+          <div class="panel-head">
+            <span class="panel-title">Actividad · 7 días</span>
+            <span class="panel-meta">creados / cerrados</span>
+          </div>
+          <div class="panel-body">
+            <svg class="activity-chart" viewBox="0 0 700 180" preserveAspectRatio="none" id="activityChart"></svg>
+          </div>
+          <div class="activity-legend">
+            <div class="legend-keys">
+              <span class="legend-key"><span class="swatch created"></span>Creados</span>
+              <span class="legend-key"><span class="swatch resolved"></span>Cerrados</span>
+            </div>
+            <span id="actSummary">— / — esta semana</span>
+          </div>
+        </div>
+
+        <div class="donut-row">
+          <div class="panel donut-panel">
+            <div class="panel-head">
+              <span class="panel-title">Por importancia</span>
+              <span class="panel-meta">7d</span>
+            </div>
+            <div class="donut-body">
+              <svg class="donut-svg" viewBox="0 0 36 36" id="donutImp"></svg>
+              <div class="donut-legend" id="legendImp"></div>
+            </div>
+          </div>
+          <div class="panel donut-panel">
+            <div class="panel-head">
+              <span class="panel-title">Por tipo</span>
+              <span class="panel-meta">7d</span>
+            </div>
+            <div class="donut-body">
+              <svg class="donut-svg" viewBox="0 0 36 36" id="donutType"></svg>
+              <div class="donut-legend" id="legendType"></div>
+            </div>
+          </div>
+          <div class="panel donut-panel">
+            <div class="panel-head">
+              <span class="panel-title">Por origen</span>
+              <span class="panel-meta">7d</span>
+            </div>
+            <div class="donut-body">
+              <svg class="donut-svg" viewBox="0 0 36 36" id="donutOrigin"></svg>
+              <div class="donut-legend" id="legendOrigin"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel recent">
+          <div class="panel-head">
+            <span class="panel-title">Bitácora · Actividad reciente</span>
+            <span class="panel-meta">últimas 10 acciones</span>
+          </div>
+          <div class="panel-body no-pad">
+            <table class="recent-table">
+              <thead>
+                <tr>
+                  <th style="width: 110px;">Hora</th>
+                  <th style="width: 90px;">Acción</th>
+                  <th style="width: 100px;">Ticket</th>
+                  <th>Cliente · Detalle</th>
+                  <th style="width: 100px;">Recurso</th>
+                </tr>
+              </thead>
+              <tbody id="recentLog"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-tickets">
+      <div class="tickets-view">
+        <div class="toolbar-row">
+          <div class="toolbar-segment">
+            <button class="filt-btn on" data-filter="Todos" onclick="filterTickets('Todos')">
+              Todos <span class="filt-c mono" id="cnt-Todos">0</span>
+            </button>
+            <button class="filt-btn" data-filter="Recibido" onclick="filterTickets('Recibido')">
+              Sin atender <span class="filt-c mono" id="cnt-Recibido">0</span>
+            </button>
+            <button class="filt-btn" data-filter="En progreso" onclick="filterTickets('En progreso')">
+              En curso <span class="filt-c mono" id="cnt-Prog">0</span>
+            </button>
+            <button class="filt-btn" data-filter="Resuelto" onclick="filterTickets('Resuelto')">
+              Resueltos <span class="filt-c mono" id="cnt-Done">0</span>
+            </button>
+            <button class="filt-btn" data-filter="Cerrado" onclick="filterTickets('Cerrado')">
+              Cerrados <span class="filt-c mono" id="cnt-Closed">0</span>
+            </button>
+          </div>
+          <div class="toolbar-search">
+            <input type="text" id="searchInput" placeholder="Buscar por folio, asunto, solicitante" oninput="renderTable()" />
+          </div>
+          <div class="results-info">
+            <b id="resultsCount">0</b>&nbsp;resultados
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="tickets">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Ticket</th>
+                <th>SF</th>
+                <th>Cliente</th>
+                <th>Problema</th>
+                <th>Imp.</th>
+                <th>Estado</th>
+                <th>Recurso</th>
+                <th>Recibido</th>
+              </tr>
+            </thead>
+            <tbody id="ticketsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-detail">
+      <div class="detail-view">
+        <div class="detail-banner">
+          <div class="detail-header">
+            <div class="detail-title-block">
+              <div class="detail-id-row">
+                <span class="detail-id-mono" id="dtId">SM-XXXXX</span>
+                <span class="detail-sf-mono">SALESFORCE: <b id="dtSf">—</b></span>
+                <span id="dtImp"></span>
+                <span id="dtStatus"></span>
+              </div>
+              <h1 class="detail-h1" id="dtTitle">Cargando...</h1>
+              <div class="detail-h-sub" id="dtSubtitle">—</div>
+            </div>
+            <div class="detail-actions">
+              <button class="btn-d" onclick="openEditModal()">Editar</button>
+              <button class="btn-d danger" onclick="deleteFromDetail()">Eliminar</button>
+            </div>
+          </div>
+          <div class="detail-tabs">
+            <button class="d-tab on" data-dtab="info" onclick="switchDetailTab('info')">
+              <span class="d-tab-num">[A]</span>Detalles
+            </button>
+            <button class="d-tab" data-dtab="solution" onclick="switchDetailTab('solution')">
+              <span class="d-tab-num">[B]</span>Solución
+            </button>
+            <button class="d-tab" data-dtab="comments" onclick="switchDetailTab('comments')">
+              <span class="d-tab-num">[C]</span>Comentarios
+              <span class="d-tab-count mono" id="dtCommentsCount">0</span>
+            </button>
+            <button class="d-tab" data-dtab="docs" onclick="switchDetailTab('docs')">
+              <span class="d-tab-num">[D]</span>Documentación
+              <span class="d-tab-count mono" id="dtDocsCount">0</span>
+            </button>
+            <button class="d-tab" data-dtab="log" onclick="switchDetailTab('log')">
+              <span class="d-tab-num">[E]</span>Bitácora
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <div class="detail-main" id="detailMain"></div>
+          <div class="detail-side" id="detailSide"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="statusbar">
+    <span class="sb-item"><span class="live-dot"></span><b>CONECTADO</b></span>
+    <span class="sb-item">Base: <b>tropigas_pr_v3</b></span>
+    <span class="sb-item">Registros: <b id="sbCount">0</b></span>
+    <span class="sb-item">SLA día: <b>94%</b></span>
+    <span class="sb-spacer"></span>
+    <span class="sb-item">REL <b>1.1.0</b></span>
+    <span class="sb-item mono"><b id="sbClock">--:--:--</b></span>
+  </div>
+
+</div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="doc-tag">FORM 01-A</span>
+        <h2 id="modalTitle">Nuevo registro de ticket operativo</h2>
+        <span class="num" id="modalNum"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="ticketForm">
+        <input type="hidden" id="ticketId" name="ticketId">
+        <input type="hidden" id="createdAt" name="createdAt">
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="num">01</span> Información del ticket
+          </div>
+          <div class="form-grid">
+            <div class="ff">
+              <label>No. Ticket <span class="hint">auto</span></label>
+              <div class="field-readonly" id="ffSm">SM-—</div>
+              <input type="hidden" id="smNumber" name="smNumber">
+            </div>
+            <div class="ff">
+              <label>No. Salesforce <span class="req">*</span></label>
+              <input type="text" id="sfId" name="sfId" required placeholder="SF-XXXXX" />
+            </div>
+            <div class="ff">
+              <label>Línea <span class="req">*</span></label>
+              <select id="linea" name="linea" required>
+                <option value="">— seleccionar —</option>
+                <option value="1">L1 · Atención general</option>
+                <option value="2">L2 · Soporte técnico</option>
+                <option value="3">L3 · Ventas</option>
+                <option value="4">L4 · Reclamos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="num">02</span> Datos del cliente
+          </div>
+          <div class="form-grid">
+            <div class="ff">
+              <label>Tipo de cuenta <span class="req">*</span></label>
+              <div class="seg-pick" id="accountTypePick">
+                <button type="button" class="on" data-acc="Individual">Individual</button>
+                <button type="button" data-acc="Comercial">Comercial</button>
+              </div>
+              <input type="hidden" id="accountType" name="accountType" value="Individual" />
+            </div>
+            <div class="ff">
+              <label>EMAS</label>
+              <input type="text" id="emasNumber" name="emasNumber" placeholder="100XXX" />
+            </div>
+            <div class="ff">
+              <label>Nombre cuenta <span class="req">*</span></label>
+              <input type="text" id="accountName" name="accountName" required />
+            </div>
+            <div class="ff">
+              <label>Contacto <span class="req">*</span></label>
+              <input type="text" id="contactName" name="contactName" required />
+            </div>
+            <div class="ff">
+              <label>Correo</label>
+              <input type="email" id="email" name="email" />
+            </div>
+            <div class="ff">
+              <label>Teléfono <span class="req">*</span></label>
+              <input type="tel" id="phone" name="phone" required placeholder="787-XXX-XXXX" />
+            </div>
+            <div class="ff span-2">
+              <label>Dirección física <span class="req">*</span></label>
+              <textarea id="physicalAddress" name="physicalAddress" rows="2" required></textarea>
+            </div>
+            <div class="ff">
+              <label>Dirección postal</label>
+              <textarea id="postalAddress" name="postalAddress" rows="2" placeholder="Igual a física"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="num">03</span> Problema reportado
+          </div>
+          <div class="form-grid">
+            <div class="ff">
+              <label>Tipo <span class="req">*</span></label>
+              <select id="problemType" name="problemType" required>
+                <option value="">— seleccionar —</option>
+                <option>Fuga de gas</option>
+                <option>Reposición de cilindro</option>
+                <option>Mantenimiento generador</option>
+                <option>Facturación</option>
+                <option>Falla sistema</option>
+                <option>Instalación</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="ff">
+              <label>Importancia <span class="req">*</span></label>
+              <select id="importance" name="importance" required>
+                <option value="Alta">Alta · 4h</option>
+                <option value="Media">Media · 12h</option>
+                <option value="Baja">Baja · 24h</option>
+              </select>
+            </div>
+            <div class="ff">
+              <label>Razón breve <span class="req">*</span></label>
+              <input type="text" id="callReason" name="callReason" required maxlength="80" />
+            </div>
+            <div class="ff span-3">
+              <label>Descripción <span class="req">*</span></label>
+              <textarea id="problemDescription" name="problemDescription" rows="3" required></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <span class="num">04</span> Asignación
+          </div>
+          <div class="form-grid">
+            <div class="ff">
+              <label>Recurso entrante <span class="req">*</span></label>
+              <input type="text" id="enteredBy" name="enteredBy" value="A. Castro" required />
+            </div>
+            <div class="ff">
+              <label>Origen <span class="req">*</span></label>
+              <select id="origin" name="origin" required>
+                <option value="Llamada">Teléfono</option>
+                <option value="Email">Correo</option>
+                <option value="WhatsApp">WhatsApp</option>
+              </select>
+            </div>
+            <div class="ff">
+              <label>Estado <span class="req">*</span></label>
+              <select id="status" name="status" required>
+                <option value="Recibido">Recibido</option>
+                <option value="En progreso">En progreso</option>
+                <option value="Resuelto">Resuelto</option>
+                <option value="Cerrado">Cerrado</option>
+              </select>
+            </div>
+            <div class="ff">
+              <label>Asignado a <span class="hint">UCG</span></label>
+              <select id="workedBy" name="workedBy">
+                <option value="">— sin asignar —</option>
+                <option>Carlos Rivera</option>
+                <option>Lucía Gallardo</option>
+                <option>Andrés Reyes</option>
+                <option>Sofía Pinilla</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-foot">
+      <div class="foot-meta" id="footMeta">— preparando —</div>
+      <div class="foot-actions">
+        <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="saveTicket()">Guardar registro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const KEY = 'tropigas_pr_v3';
+  function loadDB() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+  function saveDB() { localStorage.setItem(KEY, JSON.stringify(tickets)); }
+
+  let tickets = [];
+  let currentView = 'dashboard';
+  let previousView = 'dashboard';
+  let currentFilter = 'Todos';
+  let activeId = null;
+  let currentDetailTab = 'info';
+
+  function nextId() {
+    if (!tickets.length) return 'SM-00001';
+    const max = Math.max(...tickets.map(t => parseInt((t.id || 'SM-0').replace('SM-', '')) || 0));
+    return 'SM-' + String(max + 1).padStart(5, '0');
+  }
+  function relAgo(iso) {
+    if (!iso) return '—';
+    const diff = (Date.now() - new Date(iso)) / 1000;
+    if (diff < 60) return 'ahora';
+    if (diff < 3600) return Math.floor(diff/60) + 'm';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h';
+    if (diff < 604800) return Math.floor(diff/86400) + 'd';
+    return new Date(iso).toLocaleDateString('es-PR', { day: '2-digit', month: '2-digit' });
+  }
+  function fmtDateTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-PR', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('es-PR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+  function fmtFullDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-PR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() + ' · ' + d.toLocaleTimeString('es-PR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+  function toast(msg, type) {
+    const el = document.getElementById('toast');
+    el.className = 'toast show ' + (type === 'error' ? 'error' : '');
+    el.textContent = msg;
+    setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  function tick() {
+    const d = new Date();
+    document.getElementById('metaClock').textContent = d.toLocaleTimeString('es-PR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    document.getElementById('sbClock').textContent = d.toLocaleTimeString('es-PR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  }
+  document.getElementById('metaDate').textContent = new Date().toLocaleDateString('es-PR', {
+    weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
+  }).toUpperCase();
+  tick(); setInterval(tick, 1000);
+
+  document.getElementById('globalSearch').addEventListener('input', e => {
+    if (currentView !== 'tickets') switchView('tickets');
+    document.getElementById('searchInput').value = e.target.value;
+    renderTable();
+  });
+
+  function switchView(v, ticketId) {
+    previousView = currentView === 'detail' ? previousView : currentView;
+    currentView = v;
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+    document.getElementById('view-' + v).classList.add('on');
+    rebuildInfobar(v);
+    if (v === 'dashboard') renderDashboard();
+    if (v === 'tickets') renderTable();
+    if (v === 'detail' && ticketId) renderDetail(ticketId);
+  }
+
+  function rebuildInfobar(v) {
+    const ib = document.getElementById('infobar');
+    if (v === 'detail') {
+      const t = tickets.find(x => x.id === activeId);
+      const backLabel = previousView === 'tickets' ? 'Tickets' : 'Dashboard';
+      ib.innerHTML = `
+        <button class="tab crumb" onclick="switchView('${previousView}')">
+          <span class="tab-num">[←]</span>${backLabel}
+        </button>
+        <button class="tab crumb-current">
+          <span class="tab-num">[03]</span>Ticket ${t?.id || ''}
+        </button>
+        <div class="infobar-spacer"></div>
+        <div class="infobar-section-title">Sesión: <b>A. Castro</b></div>
+      `;
+    } else {
+      ib.innerHTML = `
+        <button class="tab ${v === 'dashboard' ? 'on' : ''}" onclick="switchView('dashboard')">
+          <span class="tab-num">[01]</span>Dashboard
+        </button>
+        <button class="tab ${v === 'tickets' ? 'on' : ''}" onclick="switchView('tickets')">
+          <span class="tab-num">[02]</span>Gestión de Tickets
+          <span class="tab-count mono">${String(tickets.length).padStart(2,'0')}</span>
+        </button>
+        <div class="infobar-spacer"></div>
+        <div class="infobar-section-title">Sesión: <b>A. Castro</b></div>
+      `;
+    }
+  }
+
+  function renderDonut(svgId, legendId, data) {
+    const svg = document.getElementById(svgId);
+    const legend = document.getElementById(legendId);
+    const total = data.reduce((s, d) => s + d.value, 0);
+    if (total === 0) {
+      svg.innerHTML = `<circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="3"/>`;
+      legend.innerHTML = '<div style="color: var(--ink-4); font-size: 11px;">Sin datos</div>';
+      return;
+    }
+    let cum = 0;
+    const segs = data.map(d => {
+      const pct = (d.value / total) * 100;
+      const seg = `<circle cx="18" cy="18" r="14" fill="none" stroke="${d.color}" stroke-width="4" stroke-dasharray="${pct.toFixed(2)} ${(100-pct).toFixed(2)}" stroke-dashoffset="${(-cum).toFixed(2)}" transform="rotate(-90 18 18)"/>`;
+      cum += pct;
+      return seg;
+    }).join('');
+    svg.innerHTML = `
+      <circle cx="18" cy="18" r="14" fill="none" stroke="#F3F4F6" stroke-width="4"/>
+      ${segs}
+      <text x="18" y="19" text-anchor="middle" font-family="Rubik" font-size="7" font-weight="700" fill="#111827">${total}</text>
+      <text x="18" y="23" text-anchor="middle" font-family="Rubik" font-size="2.2" fill="#6B7280" letter-spacing="0.15em">TOTAL</text>
+    `;
+    legend.innerHTML = data.filter(d => d.value > 0).map(d => `
+      <div class="donut-leg">
+        <span class="swatch" style="background: ${d.color}"></span>
+        <span class="lbl">${d.label}</span>
+        <span class="val">${d.value}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderActivity() {
+    const days = 7;
+    const labels = [], created = [], resolved = [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const next = new Date(d); next.setDate(d.getDate() + 1);
+      labels.push(d.toLocaleDateString('es-PR', { weekday: 'narrow', day: '2-digit' }));
+      created.push(tickets.filter(t => { const ct = new Date(t.createdAt); return ct >= d && ct < next; }).length);
+      resolved.push(tickets.filter(t => { if (!t.resolvedAt) return false; const st = new Date(t.resolvedAt); return st >= d && st < next; }).length);
+    }
+    const totalCreated = created.reduce((s,v) => s + v, 0);
+    const totalResolved = resolved.reduce((s,v) => s + v, 0);
+    document.getElementById('actSummary').textContent = `${totalCreated} creados · ${totalResolved} cerrados`;
+
+    const max = Math.max(...created, ...resolved, 1);
+    const w = 700, h = 180, padL = 32, padR = 16, padT = 14, padB = 28;
+    const cw = w - padL - padR, ch = h - padT - padB;
+    const groupW = cw / days, barW = (groupW - 8) / 2;
+    let html = '';
+    for (let i = 0; i <= 4; i++) {
+      const y = padT + (ch / 4) * i;
+      const val = Math.round(max - (max / 4) * i);
+      html += `<line x1="${padL}" y1="${y}" x2="${w - padR}" y2="${y}" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="2 2"/>`;
+      html += `<text x="${padL - 6}" y="${y + 3}" text-anchor="end" font-family="Rubik" font-size="9" fill="#9CA3AF">${val}</text>`;
+    }
+    for (let i = 0; i < days; i++) {
+      const groupX = padL + groupW * i + 4;
+      const cH = (created[i] / max) * ch;
+      const rH = (resolved[i] / max) * ch;
+      html += `<rect x="${groupX}" y="${padT + ch - cH}" width="${barW}" height="${cH}" fill="#0F224A" rx="1" />`;
+      html += `<rect x="${groupX + barW}" y="${padT + ch - rH}" width="${barW}" height="${rH}" fill="#E30512" rx="1" />`;
+      html += `<text x="${groupX + barW}" y="${h - padB + 14}" text-anchor="middle" font-family="Rubik" font-size="9" fill="#6B7280">${labels[i]}</text>`;
+    }
+    document.getElementById('activityChart').innerHTML = html;
+  }
+
+  function renderDashboard() {
+    const newCount = tickets.filter(t => t.status === 'Recibido').length;
+    const progCount = tickets.filter(t => t.status === 'En progreso').length;
+    const doneToday = tickets.filter(t => t.resolvedAt && new Date(t.resolvedAt).toDateString() === new Date().toDateString()).length;
+    document.getElementById('kpiNew').textContent = String(newCount).padStart(2, '0');
+    document.getElementById('kpiProg').textContent = String(progCount).padStart(2, '0');
+    document.getElementById('kpiDone').textContent = String(doneToday).padStart(2, '0');
+    document.getElementById('kpiTotal').textContent = String(tickets.length).padStart(2, '0');
+
+    const slaRules = { Alta: 4, Media: 12, Baja: 24 };
+    const open = tickets.filter(t => t.status === 'Recibido' || t.status === 'En progreso');
+    const urgent = open.map(t => {
+      const hours = (Date.now() - new Date(t.createdAt)) / 3600000;
+      const max = slaRules[t.importance];
+      const ratio = hours / max;
+      return { t, hours, max, ratio, overdue: hours >= max, atRisk: ratio >= 0.75 };
+    }).filter(x => x.atRisk).sort((a,b) => b.ratio - a.ratio);
+    const slaList = document.getElementById('slaList');
+    if (!urgent.length) {
+      slaList.innerHTML = `<div class="sla-empty"><div class="sla-empty-icon">✓</div><div class="sla-empty-text">Sin SLA críticos<br>Sistemas normales</div></div>`;
+    } else {
+      slaList.innerHTML = urgent.slice(0, 6).map(({ t, hours, max, ratio, overdue }) => {
+        const remaining = max - hours;
+        const fillPct = Math.min(100, ratio * 100);
+        const fillColor = overdue ? 'var(--tg-red)' : '#D97706';
+        const remText = overdue ? `+${(hours - max).toFixed(1)}h vencido` : `${remaining.toFixed(1)}h restantes`;
+        return `
+          <div class="sla-row ${overdue ? 'vencido' : 'riesgo'}" onclick="activeId='${t.id}'; switchView('detail','${t.id}')">
+            <div class="sla-row-top">
+              <span class="sla-id">${t.id}</span>
+              <span class="sla-status-tag">${overdue ? 'Vencido' : 'Riesgo'}</span>
+            </div>
+            <div class="sla-client">${escHtml(t.accountName)}</div>
+            <div class="sla-meta">
+              <span>${escHtml(t.importance)} · ${escHtml(t.problemType)}</span>
+              <span>${remText}</span>
+            </div>
+            <div class="sla-bar"><div class="sla-bar-fill" style="width: ${fillPct}%; background: ${fillColor}"></div></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const colors = {
+      Alta: '#E30512', Media: '#D97706', Baja: '#6B7280',
+      'Fuga de gas': '#E30512', 'Reposición de cilindro': '#0F224A',
+      'Mantenimiento generador': '#D97706', 'Facturación': '#10B981',
+      'Falla sistema': '#4B5563', 'Instalación': '#9CA3AF', 'Otro': '#6B7280',
+      Llamada: '#0F224A', Email: '#E30512', WhatsApp: '#10B981',
+    };
+    const countBy = prop => {
+      const c = {};
+      tickets.forEach(t => { if (t[prop]) c[t[prop]] = (c[t[prop]] || 0) + 1; });
+      return c;
+    };
+    renderDonut('donutImp', 'legendImp', ['Alta','Media','Baja'].map(k => ({ label: k, value: countBy('importance')[k] || 0, color: colors[k] })));
+    const typeCounts = countBy('problemType');
+    renderDonut('donutType', 'legendType', Object.keys(typeCounts).map(k => ({ label: k, value: typeCounts[k], color: colors[k] || '#9CA3AF' })));
+    renderDonut('donutOrigin', 'legendOrigin', ['Llamada','Email','WhatsApp'].map(k => ({ label: k, value: countBy('origin')[k] || 0, color: colors[k] })));
+
+    renderActivity();
+    renderRecentLog();
+  }
+
+  function renderRecentLog() {
+    const log = document.getElementById('recentLog');
+    const entries = [];
+    tickets.forEach(t => {
+      entries.push({ at: t.createdAt, action: 'CREADO', t, detail: `${t.accountName} · ${t.problemType}`, actor: t.enteredBy || 'Sistema' });
+      if (t.resolvedAt) entries.push({ at: t.resolvedAt, action: 'CERRADO', t, detail: `${t.accountName} · ${t.solution || 'sin notas'}`, actor: t.workedBy || 'UCG' });
+    });
+    entries.sort((a, b) => new Date(b.at) - new Date(a.at));
+    const top = entries.slice(0, 10);
+    if (!top.length) {
+      log.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: var(--ink-4);">— sin actividad —</td></tr>`;
+      return;
+    }
+    log.innerHTML = top.map(e => `
+      <tr onclick="activeId='${e.t.id}'; switchView('detail','${e.t.id}')">
+        <td class="recent-time">${fmtDateTime(e.at)}</td>
+        <td><span class="recent-action">${e.action}</span></td>
+        <td><span class="recent-id">${e.t.id}</span></td>
+        <td>${escHtml(e.detail)}</td>
+        <td style="color: var(--ink-4);">${escHtml(e.actor)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderTable() {
+    const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    let f = tickets.slice();
+    if (currentFilter !== 'Todos') f = f.filter(t => t.status === currentFilter);
+    if (search) {
+      f = f.filter(t =>
+        t.id.toLowerCase().includes(search) ||
+        (t.accountName || '').toLowerCase().includes(search) ||
+        (t.emasNumber || '').toLowerCase().includes(search) ||
+        (t.sfId || '').toLowerCase().includes(search) ||
+        (t.callReason || '').toLowerCase().includes(search)
+      );
+    }
+    f.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    document.getElementById('resultsCount').textContent = String(f.length).padStart(2, '0');
+    document.getElementById('tabCount').textContent = String(tickets.length).padStart(2, '0');
+    document.getElementById('cnt-Todos').textContent = tickets.length;
+    document.getElementById('cnt-Recibido').textContent = tickets.filter(t => t.status === 'Recibido').length;
+    document.getElementById('cnt-Prog').textContent = tickets.filter(t => t.status === 'En progreso').length;
+    document.getElementById('cnt-Done').textContent = tickets.filter(t => t.status === 'Resuelto').length;
+    document.getElementById('cnt-Closed').textContent = tickets.filter(t => t.status === 'Cerrado').length;
+    document.getElementById('sbCount').textContent = String(tickets.length).padStart(4, '0');
+
+    const body = document.getElementById('ticketsBody');
+    if (!f.length) {
+      body.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--ink-4); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;">— sin resultados —</td></tr>`;
+      return;
+    }
+    body.innerHTML = f.map((t, i) => {
+      const stClass = 'stat-' + t.status.replace(' ', '');
+      return `
+        <tr onclick="activeId='${t.id}'; switchView('detail','${t.id}')">
+          <td class="col-idx">${String(i+1).padStart(2,'0')}</td>
+          <td class="col-id-mono">${t.id}</td>
+          <td class="col-sf">${escHtml(t.sfId || '—')}</td>
+          <td class="client-cell">
+            ${escHtml(t.accountName)}
+            <div class="meta">${escHtml(t.contactName)} · ${t.emasNumber ? 'EMAS ' + escHtml(t.emasNumber) : t.accountType}</div>
+          </td>
+          <td class="problem-cell">
+            ${escHtml(t.problemType)}
+            <div class="reason">${escHtml(t.callReason || '')}</div>
+          </td>
+          <td><span class="imp-tag imp-${t.importance}">${t.importance}</span></td>
+          <td><span class="stat-tag ${stClass}">${t.status}</span></td>
+          <td>${t.workedBy ? escHtml(t.workedBy.split(' ')[0]) : '<span style="color: var(--tg-red); font-style: italic;">— sin asignar</span>'}</td>
+          <td class="col-time">${relAgo(t.createdAt)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function filterTickets(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filt-btn').forEach(b => b.classList.toggle('on', b.dataset.filter === filter));
+    renderTable();
+  }
+
+  function renderDetail(id) {
+    const t = tickets.find(x => x.id === id);
+    if (!t) { switchView('tickets'); return; }
+    activeId = id;
+
+    document.getElementById('dtId').textContent = t.id;
+    document.getElementById('dtSf').textContent = t.sfId || '—';
+    document.getElementById('dtTitle').textContent = t.callReason || t.problemType;
+    document.getElementById('dtSubtitle').innerHTML = `<b>${escHtml(t.accountName)}</b> · ${escHtml(t.contactName)} · ${escHtml(t.problemType)} · L${t.linea} · ${escHtml(t.origin)}`;
+    document.getElementById('dtImp').innerHTML = `<span class="imp-tag imp-${t.importance}">${t.importance}</span>`;
+    document.getElementById('dtStatus').innerHTML = `<span class="stat-tag stat-${t.status.replace(' ','')}">${t.status}</span>`;
+    document.getElementById('dtCommentsCount').textContent = (t.commentsList?.length || 0);
+    document.getElementById('dtDocsCount').textContent = (t.docs?.length || 0);
+
+    rebuildInfobar('detail');
+    renderDetailMain(t);
+    renderDetailSide(t);
+  }
+
+  function switchDetailTab(tab) {
+    currentDetailTab = tab;
+    document.querySelectorAll('.d-tab').forEach(x => x.classList.toggle('on', x.dataset.dtab === tab));
+    const t = tickets.find(x => x.id === activeId);
+    if (t) renderDetailMain(t);
+  }
+
+  function renderDetailMain(t) {
+    const main = document.getElementById('detailMain');
+    if (currentDetailTab === 'info') {
+      main.innerHTML = `
+        <div class="d-section">
+          <div class="d-section-head">
+            <span class="d-section-title">Cliente</span>
+            <span class="d-section-meta">${t.accountType}</span>
+          </div>
+          <div class="d-section-body">
+            <div class="prop-grid three-col">
+              <div class="prop"><div class="prop-k">Cuenta</div><div class="prop-v">${escHtml(t.accountName)}</div></div>
+              <div class="prop"><div class="prop-k">Contacto</div><div class="prop-v">${escHtml(t.contactName)}</div></div>
+              <div class="prop"><div class="prop-k">EMAS</div><div class="prop-v mono">${escHtml(t.emasNumber || '—')}</div></div>
+              <div class="prop"><div class="prop-k">Teléfono</div><div class="prop-v mono">${escHtml(t.phone)}</div></div>
+              <div class="prop"><div class="prop-k">Correo</div><div class="prop-v mono">${escHtml(t.email || '—')}</div></div>
+              <div class="prop"><div class="prop-k">Línea</div><div class="prop-v">L${t.linea}</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-section">
+          <div class="d-section-head"><span class="d-section-title">Direcciones</span></div>
+          <div class="d-section-body">
+            <div class="prop-grid">
+              <div class="prop"><div class="prop-k">Dirección física <span style="color: var(--ink-5); text-transform: none;">(Ship to)</span></div><div class="prop-v address">${escHtml(t.physicalAddress || '—')}</div></div>
+              <div class="prop"><div class="prop-k">Dirección postal</div><div class="prop-v address ${t.postalAddress ? '' : 'muted'}">${escHtml(t.postalAddress || 'Igual a dirección física')}</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-section">
+          <div class="d-section-head">
+            <span class="d-section-title">Problema reportado</span>
+            <span class="d-section-meta">${escHtml(t.problemType)}</span>
+          </div>
+          <div class="d-section-body">
+            <div class="prop-grid three-col" style="margin-bottom: 24px;">
+              <div class="prop"><div class="prop-k">Razón breve</div><div class="prop-v">${escHtml(t.callReason)}</div></div>
+              <div class="prop"><div class="prop-k">Tipo</div><div class="prop-v">${escHtml(t.problemType)}</div></div>
+              <div class="prop"><div class="prop-k">Origen</div><div class="prop-v">${escHtml(t.origin)}</div></div>
+            </div>
+            <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px;">
+              Descripción detallada
+            </div>
+            <div class="desc-block">${escHtml(t.problemDescription || '—')}</div>
+          </div>
+        </div>
+      `;
+    }
+    else if (currentDetailTab === 'solution') {
+      main.innerHTML = `
+        ${t.solution
+          ? `<div class="solution-block">
+              <div class="sb-label">✓ Solución aplicada</div>
+              <div class="sb-text">${escHtml(t.solution)}</div>
+            </div>`
+          : `<div class="solution-block empty">
+              <div class="sb-label">Sin solución registrada</div>
+              <div class="sb-text">Aún no se ha documentado la solución de este ticket.</div>
+            </div>`
+        }
+
+        <div class="resolution-form">
+          <div class="resolution-form-head">${t.solution ? 'Editar solución' : 'Documentar solución'}</div>
+          <textarea id="solutionInput" placeholder="Describe la solución aplicada, causa raíz, qué se hizo, herramientas utilizadas...">${escHtml(t.solution || '')}</textarea>
+          <div class="rf-foot">
+            <span class="rf-hint">Al guardar, marca el ticket como Resuelto si está en progreso</span>
+            <div class="rf-actions">
+              <button class="btn-d primary" onclick="saveSolution()">Guardar solución</button>
+            </div>
+          </div>
+        </div>
+
+        ${t.resolvedAt ? `
+          <div style="margin-top: 16px; font-size: 11px; letter-spacing: 0.05em; color: var(--ink-4); text-transform: uppercase;">
+            Resuelto el: <b style="color: var(--ink); font-weight: 600;">${fmtFullDate(t.resolvedAt)}</b>
+            ${t.workedBy ? ' · por <b style="color: var(--ink);">' + escHtml(t.workedBy) + '</b>' : ''}
+          </div>
+        ` : ''}
+      `;
+    }
+    else if (currentDetailTab === 'comments') {
+      const comments = t.commentsList || [];
+      let html = '';
+      if (!comments.length) {
+        html = `<div class="comments-empty">— Sin comentarios aún —</div>`;
+      } else {
+        html = `<div class="comments-list">${comments.map(c => `
+          <div class="comment">
+            <div class="comment-head">
+              <div class="comment-author">
+                <span class="ca-avatar">${escHtml(c.author.split(' ').map(s => s[0]).join('').slice(0,2).toUpperCase())}</span>
+                ${escHtml(c.author)}
+              </div>
+              <div class="comment-time">${fmtDateTime(c.at)}</div>
+            </div>
+            <div class="comment-body">${escHtml(c.text)}</div>
+          </div>
+        `).join('')}</div>`;
+      }
+      html += `
+        <div class="comment-composer">
+          <div class="comment-composer-head">Añadir comentario interno</div>
+          <textarea id="commentInput" placeholder="Escribe un comentario para el equipo..."></textarea>
+          <div class="comment-composer-foot">
+            <button class="btn-d primary" onclick="addComment()">Añadir comentario</button>
+          </div>
+        </div>
+      `;
+      main.innerHTML = html;
+    }
+    else if (currentDetailTab === 'docs') {
+      const docs = t.docs || [];
+      let html = '';
+      if (!docs.length) {
+        html = `
+          <div class="docs-empty">
+            <div class="docs-empty-icon">DOC</div>
+            <div class="docs-empty-text">— Sin documentos adjuntos —</div>
+          </div>
+        `;
+      } else {
+        html = `<div class="docs-grid">${docs.map(d => {
+          const ext = (d.name.split('.').pop() || '').toLowerCase();
+          let cls = 'doc';
+          if (['pdf'].includes(ext)) cls = 'pdf';
+          else if (['jpg','jpeg','png','gif','webp'].includes(ext)) cls = 'img';
+          return `
+            <div class="doc-item" onclick="viewDoc('${escHtml(d.name)}')">
+              <div class="doc-icon ${cls}">${ext.toUpperCase().slice(0,4) || 'DOC'}</div>
+              <div class="doc-name">${escHtml(d.name)}</div>
+              <div class="doc-meta">
+                <span>${d.size}</span>
+                <span>${fmtDateTime(d.uploadedAt)}</span>
+              </div>
+            </div>
+          `;
+        }).join('')}</div>`;
+      }
+      html += `
+        <div class="upload-zone" onclick="addDoc()">
+          <div class="uz-icon">+</div>
+          <div class="uz-text">Subir documento</div>
+          <div class="uz-hint">PDF · IMG · DOC · max 10MB</div>
+        </div>
+      `;
+      main.innerHTML = html;
+    }
+    else if (currentDetailTab === 'log') {
+      const events = t.events || [
+        { type: 'creation', action: 'TICKET CREADO', detail: `por <b>${escHtml(t.enteredBy)}</b> · canal: ${escHtml(t.origin)}`, at: t.createdAt, actor: t.enteredBy }
+      ];
+      main.innerHTML = `
+        <div class="d-section">
+          <div class="d-section-head">
+            <span class="d-section-title">Historial completo</span>
+            <span class="d-section-meta">${events.length} eventos</span>
+          </div>
+          <div class="d-section-body">
+            <div class="timeline">
+              ${events.map(e => `
+                <div class="tl-event ${e.type}">
+                  <div class="tl-event-head">
+                    <span class="tl-action">${e.action}</span>
+                    <span class="tl-time">${fmtFullDate(e.at)}</span>
+                  </div>
+                  <div class="tl-detail">${e.detail}</div>
+                  <div class="tl-actor">${escHtml(e.actor || 'Sistema')}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  function renderDetailSide(t) {
+    const slaRules = { Alta: 4, Media: 12, Baja: 24 };
+    const maxHours = slaRules[t.importance];
+    const hours = (Date.now() - new Date(t.createdAt)) / 3600000;
+    const ratio = Math.min(1, hours / maxHours);
+    const overdue = hours >= maxHours && t.status !== 'Resuelto' && t.status !== 'Cerrado';
+    const atRisk = ratio >= 0.75 && !overdue && t.status !== 'Resuelto' && t.status !== 'Cerrado';
+    const fillPct = ratio * 100;
+    const fillColor = overdue ? 'var(--tg-red)' : atRisk ? '#D97706' : 'var(--st-done)';
+    const slaText = (t.status === 'Resuelto' || t.status === 'Cerrado') ? 'CERRADO' : overdue ? `+${(hours - maxHours).toFixed(1)}h VENCIDO` : `${(maxHours - hours).toFixed(1)}h restantes`;
+    const slaCls = (t.status === 'Resuelto' || t.status === 'Cerrado') ? 'ok' : overdue ? 'vencido' : atRisk ? 'riesgo' : 'ok';
+
+    const side = document.getElementById('detailSide');
+    side.innerHTML = `
+      <div class="side-block">
+        <div class="side-block-title">Estado</div>
+        <div style="margin-top: 4px;">
+          <span class="stat-tag stat-${t.status.replace(' ','')}" style="font-size: 11px; padding: 4px 10px;">${t.status}</span>
+        </div>
+        <div class="side-status-pick">
+          ${['Recibido','En progreso','Resuelto','Cerrado'].map(s => `
+            <button class="side-status-btn ${t.status === s ? 'on' : ''}" onclick="quickChangeStatus('${s}')">${s}</button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="side-block">
+        <div class="side-block-title">SLA · ${t.importance}</div>
+        <div class="sla-meter">
+          <div class="sla-meter-bar">
+            <div class="sla-meter-fill" style="width: ${fillPct}%; background: ${fillColor}"></div>
+          </div>
+          <div class="sla-meter-info">
+            <span>${maxHours}h máx</span>
+            <span class="status-text ${slaCls}">${slaText}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-block">
+        <div class="side-block-title">Asignación</div>
+        <div class="side-prop">
+          <div class="side-prop-k">Recurso entrante</div>
+          <div class="side-prop-v">${escHtml(t.enteredBy)}</div>
+        </div>
+        <div class="side-prop">
+          <div class="side-prop-k">Trabajado por <span style="color: var(--ink-5); text-transform: none;">(UCG)</span></div>
+          <div class="side-prop-v" style="${t.workedBy ? '' : 'color: var(--tg-red); font-style: italic;'}">${escHtml(t.workedBy || '— sin asignar')}</div>
+        </div>
+      </div>
+
+      <div class="side-block">
+        <div class="side-block-title">Fechas</div>
+        <div class="side-prop">
+          <div class="side-prop-k">Recibido</div>
+          <div class="side-prop-v mono">${fmtDateTime(t.createdAt)}</div>
+        </div>
+        <div class="side-prop">
+          <div class="side-prop-k">Resuelto</div>
+          <div class="side-prop-v mono ${t.resolvedAt ? '' : 'muted'}">${t.resolvedAt ? fmtDateTime(t.resolvedAt) : '—'}</div>
+        </div>
+        ${t.resolvedAt ? `
+          <div class="side-prop">
+            <div class="side-prop-k">Tiempo total</div>
+            <div class="side-prop-v mono">${((new Date(t.resolvedAt) - new Date(t.createdAt)) / 3600000).toFixed(1)}h</div>
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="side-block">
+        <div class="side-block-title">Identificadores</div>
+        <div class="side-prop">
+          <div class="side-prop-k">Ticket</div>
+          <div class="side-prop-v mono">${t.id}</div>
+        </div>
+        <div class="side-prop">
+          <div class="side-prop-k">Salesforce</div>
+          <div class="side-prop-v mono">${t.sfId || '—'}</div>
+        </div>
+        <div class="side-prop">
+          <div class="side-prop-k">EMAS</div>
+          <div class="side-prop-v mono">${t.emasNumber || '—'}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function logEvent(t, type, action, detail, actor) {
+    if (!t.events) t.events = [{ type: 'creation', action: 'TICKET CREADO', detail: `por <b>${escHtml(t.enteredBy)}</b> · canal: ${escHtml(t.origin)}`, at: t.createdAt, actor: t.enteredBy }];
+    t.events.push({ type, action, detail, at: new Date().toISOString(), actor });
+  }
+
+  function quickChangeStatus(newStatus) {
+    const t = tickets.find(x => x.id === activeId);
+    if (!t || t.status === newStatus) return;
+    const oldStatus = t.status;
+    t.status = newStatus;
+    if (newStatus === 'Resuelto' || newStatus === 'Cerrado') {
+      if (!t.resolvedAt) t.resolvedAt = new Date().toISOString();
+    } else {
+      t.resolvedAt = null;
+    }
+    logEvent(t, 'status', 'CAMBIO DE ESTADO', `<b>${escHtml(oldStatus)}</b> → <b>${escHtml(newStatus)}</b>`, 'A. Castro');
+    saveDB();
+    renderDetail(t.id);
+    toast(`Estado: ${newStatus}`);
+  }
+
+  function saveSolution() {
+    const t = tickets.find(x => x.id === activeId);
+    if (!t) return;
+    const text = document.getElementById('solutionInput').value.trim();
+    if (!text) { toast('La solución no puede estar vacía', 'error'); return; }
+    const isNew = !t.solution;
+    t.solution = text;
+    if (t.status === 'En progreso' || t.status === 'Recibido') {
+      t.status = 'Resuelto';
+      if (!t.resolvedAt) t.resolvedAt = new Date().toISOString();
+    }
+    logEvent(t, 'resolution', isNew ? 'SOLUCIÓN AGREGADA' : 'SOLUCIÓN ACTUALIZADA', escHtml(text.slice(0, 80)) + (text.length > 80 ? '...' : ''), 'A. Castro');
+    saveDB();
+    renderDetail(t.id);
+    toast(isNew ? 'Solución guardada' : 'Solución actualizada');
+  }
+
+  function addComment() {
+    const t = tickets.find(x => x.id === activeId);
+    if (!t) return;
+    const text = document.getElementById('commentInput').value.trim();
+    if (!text) { toast('El comentario no puede estar vacío', 'error'); return; }
+    if (!t.commentsList) t.commentsList = [];
+    t.commentsList.push({ author: 'A. Castro', text, at: new Date().toISOString() });
+    logEvent(t, 'status', 'COMENTARIO AGREGADO', escHtml(text.slice(0, 80)) + (text.length > 80 ? '...' : ''), 'A. Castro');
+    saveDB();
+    renderDetail(t.id);
+    toast('Comentario añadido');
+  }
+
+  function addDoc() {
+    const t = tickets.find(x => x.id === activeId);
+    if (!t) return;
+    const name = prompt('Nombre del documento (ej. factura.pdf, foto.jpg):');
+    if (!name) return;
+    const sizes = ['145 KB', '892 KB', '1.4 MB', '2.1 MB', '687 KB'];
+    if (!t.docs) t.docs = [];
+    t.docs.push({ name, size: sizes[Math.floor(Math.random() * sizes.length)], uploadedAt: new Date().toISOString() });
+    logEvent(t, 'status', 'DOCUMENTO ADJUNTADO', `archivo: <b>${escHtml(name)}</b>`, 'A. Castro');
+    saveDB();
+    renderDetail(t.id);
+    toast(`${name} adjuntado`);
+  }
+
+  function viewDoc(name) { toast(`Abriendo ${name}...`); }
+
+  function deleteFromDetail() {
+    const t = tickets.find(x => x.id === activeId);
+    if (!t) return;
+    if (!confirm(`¿Eliminar el ticket ${t.id} de forma permanente?`)) return;
+    tickets = tickets.filter(x => x.id !== t.id);
+    saveDB();
+    activeId = null;
+    switchView(previousView);
+    toast('Ticket eliminado');
+  }
+
+  function openEditModal() { openModal(activeId); }
+
+  const modalBack = document.getElementById('modalBack');
+  function openModal(ticketId) {
+    const form = document.getElementById('ticketForm');
+    form.reset();
+    document.querySelectorAll('#accountTypePick button').forEach(b => b.classList.remove('on'));
+
+    if (ticketId) {
+      const t = tickets.find(x => x.id === ticketId);
+      if (!t) return;
+      document.getElementById('modalTitle').textContent = 'Edición de registro';
+      document.getElementById('modalNum').textContent = t.id;
+      document.getElementById('ffSm').textContent = t.id;
+      document.getElementById('ticketId').value = t.id;
+      document.getElementById('smNumber').value = t.id;
+      document.getElementById('createdAt').value = t.createdAt;
+      Object.keys(t).forEach(k => {
+        const el = document.getElementById(k);
+        if (el && el.tagName !== 'BUTTON' && el.id !== 'smNumber') el.value = t[k] || '';
+      });
+      document.querySelector(`#accountTypePick button[data-acc="${t.accountType || 'Individual'}"]`)?.classList.add('on');
+      document.getElementById('accountType').value = t.accountType || 'Individual';
+      document.getElementById('footMeta').textContent = `Creado: ${fmtDateTime(t.createdAt)} · ${t.enteredBy || '—'}`;
+    } else {
+      const newId = nextId();
+      document.getElementById('modalTitle').textContent = 'Nuevo registro';
+      document.getElementById('modalNum').textContent = newId;
+      document.getElementById('ffSm').textContent = newId;
+      document.getElementById('ticketId').value = '';
+      document.getElementById('smNumber').value = newId;
+      document.getElementById('createdAt').value = new Date().toISOString();
+      document.getElementById('status').value = 'Recibido';
+      document.getElementById('origin').value = 'Llamada';
+      document.getElementById('importance').value = 'Media';
+      document.getElementById('enteredBy').value = 'A. Castro';
+      document.querySelector('#accountTypePick button[data-acc="Individual"]').classList.add('on');
+      document.getElementById('accountType').value = 'Individual';
+      document.getElementById('footMeta').textContent = `Creando ahora · ${fmtDateTime(new Date().toISOString())}`;
+    }
+    modalBack.classList.add('show');
+    setTimeout(() => document.getElementById('sfId').focus(), 80);
+  }
+  function closeModal() { modalBack.classList.remove('show'); }
+  modalBack.addEventListener('click', e => { if (e.target === modalBack) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modalBack.classList.contains('show')) closeModal(); });
+
+  document.querySelectorAll('#accountTypePick button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#accountTypePick button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      document.getElementById('accountType').value = b.dataset.acc;
+    });
+  });
+
+  function saveTicket() {
+    const form = document.getElementById('ticketForm');
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    const isNew = !document.getElementById('ticketId').value;
+    const tId = isNew ? document.getElementById('smNumber').value : document.getElementById('ticketId').value;
+    const data = { id: tId };
+    new FormData(form).forEach((v, k) => data[k] = v);
+    data.id = tId;
+    data.accountType = document.getElementById('accountType').value;
+
+    if (isNew) {
+      data.createdAt = new Date().toISOString();
+      data.commentsList = [];
+      data.docs = [];
+      data.events = [{ type: 'creation', action: 'TICKET CREADO', detail: `por <b>${escHtml(data.enteredBy)}</b> · canal: ${escHtml(data.origin)}`, at: data.createdAt, actor: data.enteredBy }];
+    } else {
+      const existing = tickets.find(x => x.id === tId);
+      data.createdAt = existing.createdAt;
+      data.commentsList = existing.commentsList || [];
+      data.docs = existing.docs || [];
+      data.events = existing.events || [];
+      if (existing.status !== data.status) {
+        data.events.push({ type: 'status', action: 'CAMBIO DE ESTADO', detail: `<b>${escHtml(existing.status)}</b> → <b>${escHtml(data.status)}</b>`, at: new Date().toISOString(), actor: 'A. Castro' });
+      }
+    }
+    if (data.status === 'Resuelto' || data.status === 'Cerrado') {
+      const existing = tickets.find(x => x.id === tId);
+      data.resolvedAt = (existing && existing.resolvedAt) ? existing.resolvedAt : new Date().toISOString();
+    } else {
+      data.resolvedAt = null;
+    }
+
+    if (isNew) tickets.unshift(data);
+    else tickets[tickets.findIndex(x => x.id === tId)] = data;
+
+    saveDB();
+    closeModal();
+    if (currentView === 'detail') renderDetail(tId);
+    else if (currentView === 'dashboard') renderDashboard();
+    else renderTable();
+    toast(isNew ? `Ticket ${tId} creado` : `${tId} actualizado`);
+  }
+
+  function relDate(daysOffset, hoursOffset = 0) {
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    d.setHours(d.getHours() + hoursOffset);
+    return d.toISOString();
+  }
+  const SEED = [
+    { id: 'SM-00001', sfId: 'SF-90112', linea: '2', accountType: 'Comercial', emasNumber: '100451',
+      accountName: 'Restaurante El Sabor PR', contactName: 'Juan Pérez', email: 'juan@elsabor.pr',
+      phone: '787-123-4567', physicalAddress: 'Calle Loíza, San Juan, PR 00911', postalAddress: '',
+      problemType: 'Fuga de gas', importance: 'Alta', callReason: 'Olor a gas en cocina principal',
+      problemDescription: 'Cliente reporta silbido y fuerte olor a gas cerca de las estufas principales. Cerraron la válvula principal preventivamente.',
+      enteredBy: 'A. Castro', origin: 'Llamada', status: 'En progreso',
+      workedBy: 'Carlos Rivera', solution: '', comments: '',
+      createdAt: relDate(0, -3), resolvedAt: null,
+      commentsList: [
+        { author: 'A. Castro', text: 'Cliente llamó muy preocupado, le pedí que cerrara la válvula principal y desalojara la cocina. Confirmó que ya lo hizo.', at: relDate(0, -2.8) },
+        { author: 'Carlos Rivera', text: 'En camino a la sucursal. Llegada estimada 15 minutos.', at: relDate(0, -2.5) },
+        { author: 'Carlos Rivera', text: 'En sitio. Identifiqué fuga en regulador de presión del cilindro principal. Procedo a reemplazar pieza.', at: relDate(0, -1) },
+      ],
+      docs: [
+        { name: 'foto-fuga-regulador.jpg', size: '1.2 MB', uploadedAt: relDate(0, -1.5) },
+        { name: 'reporte-tecnico-RT-882.pdf', size: '345 KB', uploadedAt: relDate(0, -0.8) },
+      ],
+      events: [
+        { type: 'creation', action: 'TICKET CREADO', detail: 'por <b>A. Castro</b> · canal: Llamada', at: relDate(0, -3), actor: 'A. Castro' },
+        { type: 'status', action: 'ASIGNADO A TÉCNICO', detail: 'Asignado a <b>Carlos Rivera</b> (UCG)', at: relDate(0, -2.7), actor: 'A. Castro' },
+        { type: 'status', action: 'CAMBIO DE ESTADO', detail: '<b>Recibido</b> → <b>En progreso</b>', at: relDate(0, -2.5), actor: 'Carlos Rivera' },
+      ]
+    },
+    { id: 'SM-00002', sfId: 'SF-90113', linea: '1', accountType: 'Individual', emasNumber: '',
+      accountName: 'María Rodríguez', contactName: 'María Rodríguez', email: '',
+      phone: '787-987-6543', physicalAddress: 'Urb. Los Pinos, Bayamón, PR 00956', postalAddress: '',
+      problemType: 'Reposición de cilindro', importance: 'Baja', callReason: 'Pedido tanque 100lbs',
+      problemDescription: 'Cliente solicita reposición de cilindro de 100lbs para generador residencial.',
+      enteredBy: 'A. Castro', origin: 'WhatsApp', status: 'Recibido',
+      workedBy: '', solution: '', comments: '',
+      createdAt: relDate(0, -1), resolvedAt: null,
+      commentsList: [], docs: [],
+      events: [{ type: 'creation', action: 'TICKET CREADO', detail: 'por <b>A. Castro</b> · canal: WhatsApp', at: relDate(0, -1), actor: 'A. Castro' }]
+    },
+    { id: 'SM-00003', sfId: 'SF-90114', linea: '4', accountType: 'Comercial', emasNumber: '100888',
+      accountName: 'Panadería La Borinqueña', contactName: 'Roberto Chen', email: 'admin@laborinquena.pr',
+      phone: '787-222-3333', physicalAddress: 'Avenida Hostos, Ponce, PR 00716', postalAddress: '',
+      problemType: 'Facturación', importance: 'Media', callReason: 'Doble cobro en cuenta',
+      problemDescription: 'Se realizaron dos cargos de $150 en la misma fecha. Necesita devolución o nota de crédito.',
+      enteredBy: 'A. Castro', origin: 'Email', status: 'Cerrado',
+      workedBy: 'Lucía Gallardo',
+      solution: 'Se identificó error en sistema de facturación que duplicó el cargo del 15 de abril. Procesado reverso bancario por $150 al cliente. Confirmado por correo. Caso documentado para evitar recurrencia.',
+      comments: '',
+      createdAt: relDate(-2, 0), resolvedAt: relDate(-1, -4),
+      commentsList: [
+        { author: 'Lucía Gallardo', text: 'Verifiqué los registros y efectivamente hay doble cargo. Coordinando con finanzas para procesar el reverso.', at: relDate(-2, 4) },
+        { author: 'Lucía Gallardo', text: 'Reverso aprobado y procesado. Contactando al cliente para confirmar.', at: relDate(-1, -6) },
+      ],
+      docs: [
+        { name: 'estado-cuenta-abril.pdf', size: '512 KB', uploadedAt: relDate(-2, 1) },
+        { name: 'comprobante-reverso.pdf', size: '210 KB', uploadedAt: relDate(-1, -5) },
+      ],
+      events: [
+        { type: 'creation', action: 'TICKET CREADO', detail: 'por <b>A. Castro</b> · canal: Email', at: relDate(-2, 0), actor: 'A. Castro' },
+        { type: 'status', action: 'ASIGNADO A FINANZAS', detail: 'Asignado a <b>Lucía Gallardo</b> (UCG)', at: relDate(-2, 2), actor: 'A. Castro' },
+        { type: 'status', action: 'CAMBIO DE ESTADO', detail: '<b>Recibido</b> → <b>En progreso</b>', at: relDate(-2, 4), actor: 'Lucía Gallardo' },
+        { type: 'resolution', action: 'SOLUCIÓN APLICADA', detail: 'Reverso bancario procesado por $150', at: relDate(-1, -5), actor: 'Lucía Gallardo' },
+        { type: 'status', action: 'CAMBIO DE ESTADO', detail: '<b>En progreso</b> → <b>Cerrado</b>', at: relDate(-1, -4), actor: 'Lucía Gallardo' },
+      ]
+    },
+    { id: 'SM-00004', sfId: 'SF-90115', linea: '3', accountType: 'Comercial', emasNumber: '',
+      accountName: 'Hotel Central Condado', contactName: 'Elena Varela', email: 'gerencia@hotelcentral.pr',
+      phone: '787-300-0000', physicalAddress: 'Ashford Av, Condado, San Juan, PR 00907', postalAddress: '',
+      problemType: 'Instalación', importance: 'Media', callReason: 'Evaluación tanque estacionario',
+      problemDescription: 'Hotel desea evaluar cambio de cilindros 100lbs a tanque estacionario de 500gal en azotea.',
+      enteredBy: 'A. Castro', origin: 'Llamada', status: 'En progreso',
+      workedBy: 'Andrés Reyes', solution: '', comments: 'Inspección coordinada para martes 9am.',
+      createdAt: relDate(-1, -6), resolvedAt: null,
+      commentsList: [
+        { author: 'Andrés Reyes', text: 'Coordinada visita de inspección para martes 9am. Llevaré planos y cotización preliminar.', at: relDate(-1, -2) }
+      ],
+      docs: [], events: [
+        { type: 'creation', action: 'TICKET CREADO', detail: 'por <b>A. Castro</b> · canal: Llamada', at: relDate(-1, -6), actor: 'A. Castro' },
+        { type: 'status', action: 'CAMBIO DE ESTADO', detail: '<b>Recibido</b> → <b>En progreso</b>', at: relDate(-1, -3), actor: 'Andrés Reyes' },
+      ]
+    },
+    { id: 'SM-00005', sfId: 'SF-90116', linea: '2', accountType: 'Comercial', emasNumber: '100992',
+      accountName: 'Hospital Buen Pastor', contactName: 'Dr. Ramón Vega', email: 'mantenimiento@buenpastor.pr',
+      phone: '787-555-1100', physicalAddress: 'Caguas, PR 00725', postalAddress: '',
+      problemType: 'Mantenimiento generador', importance: 'Alta', callReason: 'Generador no arranca',
+      problemDescription: 'Generador de respaldo del hospital no arranca durante prueba semanal. Requiere mantenimiento URGENTE para garantizar respaldo eléctrico.',
+      enteredBy: 'A. Castro', origin: 'Llamada', status: 'Recibido',
+      workedBy: '', solution: '', comments: '',
+      createdAt: relDate(0, -5), resolvedAt: null,
+      commentsList: [], docs: [], events: [
+        { type: 'creation', action: 'TICKET CREADO', detail: 'por <b>A. Castro</b> · canal: Llamada · CRÍTICO', at: relDate(0, -5), actor: 'A. Castro' }
+      ]
+    },
+    { id: 'SM-00006', sfId: 'SF-90117', linea: '1', accountType: 'Individual', emasNumber: '100221',
+      accountName: 'Carlos Méndez Ortiz', contactName: 'Carlos Méndez', email: 'cmendez@gmail.com',
+      phone: '787-411-9988', physicalAddress: 'Carolina, PR 00983', postalAddress: '',
+      problemType: 'Reposición de cilindro', importance: 'Baja', callReason: 'Reposición programada',
+      problemDescription: 'Reposición rutinaria de cilindro residencial de 25lbs.',
+      enteredBy: 'A. Castro', origin: 'WhatsApp', status: 'Resuelto',
+      workedBy: 'Carlos Rivera', solution: 'Reposición de cilindro completada en domicilio. Cliente firmó conformidad. Próxima reposición programada para mayo.',
+      comments: '',
+      createdAt: relDate(-3, 0), resolvedAt: relDate(-2, -2),
+      commentsList: [
+        { author: 'Carlos Rivera', text: 'Reposición completada sin incidencias. Cliente conforme.', at: relDate(-2, -2) }
+      ],
+      docs: [
+        { name: 'firma-conformidad.jpg', size: '425 KB', uploadedAt: relDate(-2, -2) }
+      ],
+      events: [
+        { type: 'creation', action: 'TICKET CREADO', detail: 'por <b>A. Castro</b> · canal: WhatsApp', at: relDate(-3, 0), actor: 'A. Castro' },
+        { type: 'resolution', action: 'SOLUCIÓN APLICADA', detail: 'Reposición completada', at: relDate(-2, -2), actor: 'Carlos Rivera' },
+        { type: 'status', action: 'CAMBIO DE ESTADO', detail: '<b>Recibido</b> → <b>Resuelto</b>', at: relDate(-2, -2), actor: 'Carlos Rivera' },
+      ]
+    },
+  ];
+
+  function init() {
+    tickets = loadDB();
+    if (!tickets.length) {
+      tickets = [...SEED];
+      saveDB();
+    }
+    renderDashboard();
+  }
+  init();
+</script>
+</body>
+</html>

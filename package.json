@@ -1,0 +1,16 @@
+{
+  "name": "tropigas-it-helpdesk",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Tropigas Puerto Rico - Mesa de Ayuda IT (UCG)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

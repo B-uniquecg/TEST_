@@ -605,7 +605,7 @@
   }
 
   function boot() {
-    renderDevNav();
+    // renderDevNav() retired — production-style nav now drives navigation
     renderUserMenu();
     renderSearchBar();
     wireAll();

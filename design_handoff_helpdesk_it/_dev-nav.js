@@ -173,11 +173,14 @@
     return;
   }
 
-  // Hide IT-only topbar stats (Sistema/SLA/Hora AST) for admin — they
-  // don't apply to empleados and they collide with the floating search bar
+  // Hide IT-only chrome that doesn't apply to empleados:
+  //   .top-meta — Sistema/SLA/Hora stats (also collide with search bar)
+  //   .team-load-panel — IT technician workload widget on dashboard
   if (getRole() === 'admin') {
     var hideMetaStyle = document.createElement('style');
-    hideMetaStyle.textContent = '.top-meta{display:none !important}';
+    hideMetaStyle.textContent =
+      '.top-meta{display:none !important}' +
+      '.team-load-panel{display:none !important}';
     document.head.appendChild(hideMetaStyle);
   }
 

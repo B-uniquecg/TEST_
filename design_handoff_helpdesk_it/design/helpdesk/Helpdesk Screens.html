@@ -640,25 +640,25 @@
               </div>
               <div class="cat-pick">
                 <label class="sel">
-                  <input type="radio" name="cat" checked />
+                  <input type="radio" name="cat" value="Hardware" checked />
                   <div class="ic">[01] HW</div>
                   <div class="name">Computadora / Equipo</div>
                   <div class="desc">Laptop, PC, monitor, impresora, teléfono</div>
                 </label>
                 <label>
-                  <input type="radio" name="cat" />
+                  <input type="radio" name="cat" value="Sistema" />
                   <div class="ic">[02] APP</div>
                   <div class="name">Sistema o aplicación</div>
                   <div class="desc">Salesforce, EMAS, POS, correo, Teams</div>
                 </label>
                 <label>
-                  <input type="radio" name="cat" />
+                  <input type="radio" name="cat" value="Red" />
                   <div class="ic">[03] NET</div>
                   <div class="name">Red / Internet</div>
                   <div class="desc">WiFi, conexión lenta, VPN, sucursal sin red</div>
                 </label>
                 <label>
-                  <input type="radio" name="cat" />
+                  <input type="radio" name="cat" value="Acceso" />
                   <div class="ic">[04] ACC</div>
                   <div class="name">Accesos / Cuenta</div>
                   <div class="desc">Contraseña, permisos, usuario nuevo, baja</div>
@@ -676,12 +676,12 @@
               <div class="emp-grid">
                 <div class="emp-fld s12">
                   <label class="fl">Resumen breve <span class="req">*</span></label>
-                  <input type="text" value="La impresora de la oficina no imprime las facturas" />
+                  <input type="text" id="emp-summary" value="La impresora de la oficina no imprime las facturas" />
                   <div class="help">Una línea — como si fuera el asunto de un correo.</div>
                 </div>
                 <div class="emp-fld s12">
                   <label class="fl">Descripción detallada <span class="req">*</span></label>
-                  <textarea>Desde esta mañana la impresora de la oficina de Administración (HP LaserJet del lado de los archivos) no responde cuando le mandamos a imprimir desde Salesforce. La luz amarilla está parpadeando. Reinicié la computadora y la impresora una vez y volvió a hacer lo mismo. Tengo facturas atrasadas para entregar al despacho de las 3pm.</textarea>
+                  <textarea id="emp-description">Desde esta mañana la impresora de la oficina de Administración (HP LaserJet del lado de los archivos) no responde cuando le mandamos a imprimir desde Salesforce. La luz amarilla está parpadeando. Reinicié la computadora y la impresora una vez y volvió a hacer lo mismo. Tengo facturas atrasadas para entregar al despacho de las 3pm.</textarea>
                   <div class="help">Incluye: qué intentaste, cuándo empezó, qué mensaje sale, a quién afecta.</div>
                 </div>
                 <div class="emp-fld s6">
@@ -729,17 +729,17 @@
               </div>
               <div class="imp-pick">
                 <label class="alta sel">
-                  <input type="radio" name="imp" checked />
+                  <input type="radio" name="imp" value="Alta" checked />
                   <div class="name">Alta <span class="tag">Alta</span></div>
                   <div class="desc">No puedo hacer mi trabajo · afecta operación · respuesta en 4h</div>
                 </label>
                 <label class="media">
-                  <input type="radio" name="imp" />
+                  <input type="radio" name="imp" value="Media" />
                   <div class="name">Media <span class="tag">Media</span></div>
                   <div class="desc">Tengo un workaround pero molesta · respuesta en 12h</div>
                 </label>
                 <label class="baja">
-                  <input type="radio" name="imp" />
+                  <input type="radio" name="imp" value="Baja" />
                   <div class="name">Baja <span class="tag">Baja</span></div>
                   <div class="desc">No es urgente · puede esperar · respuesta en 24h</div>
                 </label>
@@ -778,28 +778,9 @@
           </div>
 
           <div class="rail-card">
-            <div class="rail-card-h"><h4>Mis tickets</h4><div class="ed">Ver todos · 7</div></div>
-            <div class="rail-card-b" style="padding: 6px 14px 14px;">
-              <div class="my-tickets-row">
-                <span class="id">SM-00041</span>
-                <span class="desc">Salesforce no carga reportes</span>
-                <span class="stat-mini" style="background: var(--imp-media-bg); color: var(--imp-media-fg);">Progr.</span>
-              </div>
-              <div class="my-tickets-row">
-                <span class="id">SM-00038</span>
-                <span class="desc">VPN se desconecta cada 10 min</span>
-                <span class="stat-mini" style="background: var(--imp-media-bg); color: var(--imp-media-fg);">Progr.</span>
-              </div>
-              <div class="my-tickets-row">
-                <span class="id">SM-00029</span>
-                <span class="desc">Reset de contraseña EMAS</span>
-                <span class="stat-mini" style="background: #D1FAE5; color: #065F46;">Resu.</span>
-              </div>
-              <div class="my-tickets-row">
-                <span class="id">SM-00021</span>
-                <span class="desc">Monitor 2 no enciende</span>
-                <span class="stat-mini" style="background: #D1FAE5; color: #065F46;">Resu.</span>
-              </div>
+            <div class="rail-card-h"><h4>Mis tickets</h4><div class="ed" id="emp-tickets-count">Ver todos</div></div>
+            <div class="rail-card-b" id="emp-tickets-rail" style="padding: 6px 14px 14px;">
+              <div style="font-size:11px;color:var(--ink-4);padding:8px 0;">Cargando...</div>
             </div>
           </div>
 
@@ -1196,18 +1177,102 @@
     document.getElementById('btn-' + which).classList.add('on');
     try { localStorage.setItem('tg_persona', which); } catch (e) {}
   }
-  function saveTicket() {
-    document.getElementById('save-banner').classList.add('on');
-    document.getElementById('save-banner').scrollIntoView ? null : null;
+  function clearChildren(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
   }
+
+  async function saveTicket() {
+    var btn = document.querySelector('button.btn.primary[onclick^="saveTicket"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+    try {
+      var summary = document.getElementById('emp-summary').value.trim();
+      var description = document.getElementById('emp-description').value.trim();
+      var cat = document.querySelector('input[name="cat"]:checked');
+      var imp = document.querySelector('input[name="imp"]:checked');
+      var me = (window.__tgGetCurrentUser && window.__tgGetCurrentUser()) || { id: 'EMP-2104' };
+      var ticket = await window.tg.createTicket({
+        summary: summary || 'Reporte sin resumen',
+        description: description,
+        empleadoId: me.id,
+        categoria: cat ? cat.value : 'Sistema',
+        importance: imp ? imp.value : 'Media',
+        assetId: 'HP-LJ-204',
+      });
+      document.getElementById('new-ticket-id').textContent = ticket.id;
+      document.getElementById('save-banner').classList.add('on');
+      document.getElementById('save-banner').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      await renderMisTickets();
+    } catch (e) {
+      alert('No se pudo crear el ticket. Intenta de nuevo.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Enviar a IT'; }
+    }
+  }
+
+  function statusPillStyle(status) {
+    var map = {
+      'Recibido':    { label: 'Recib.', bg: '#DBEAFE', fg: '#1E40AF' },
+      'En progreso': { label: 'Progr.', bg: '#FEF3C7', fg: '#92400E' },
+      'Resuelto':    { label: 'Resu.',  bg: '#D1FAE5', fg: '#065F46' },
+      'Cerrado':     { label: 'Cerr.',  bg: '#E5E7EB', fg: '#374151' },
+    };
+    return map[status] || map['Recibido'];
+  }
+
+  async function renderMisTickets() {
+    var rail = document.getElementById('emp-tickets-rail');
+    if (!rail) return;
+    var me = (window.__tgGetCurrentUser && window.__tgGetCurrentUser()) || { id: 'EMP-2104' };
+    var tickets = await window.tg.tickets({ empleadoId: me.id });
+    clearChildren(rail);
+    if (!tickets.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'font-size:11px;color:var(--ink-4);padding:8px 0;';
+      empty.textContent = 'Aún no has reportado tickets.';
+      rail.appendChild(empty);
+    } else {
+      tickets.slice(0, 8).forEach(function (t) {
+        var row = document.createElement('div');
+        row.className = 'my-tickets-row';
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function () { location.href = '/ticket-detail?id=' + t.id; });
+        var id = document.createElement('span');
+        id.className = 'id';
+        id.textContent = t.id;
+        var desc = document.createElement('span');
+        desc.className = 'desc';
+        desc.textContent = t.summary;
+        var pill = document.createElement('span');
+        pill.className = 'stat-mini';
+        var p = statusPillStyle(t.status);
+        pill.style.background = p.bg;
+        pill.style.color = p.fg;
+        pill.textContent = p.label;
+        row.appendChild(id);
+        row.appendChild(desc);
+        row.appendChild(pill);
+        rail.appendChild(row);
+      });
+    }
+    var c = document.getElementById('emp-tickets-count');
+    if (c) c.textContent = 'Ver todos · ' + tickets.length;
+  }
+
   function selRow(row) {
     document.querySelectorAll('.q-row').forEach(r => r.classList.remove('sel'));
     row.classList.add('sel');
   }
+
   try {
     const p = localStorage.getItem('tg_persona');
     if (p === 'it' || p === 'emp') show(p);
   } catch (e) {}
+
+  if (window.tg) {
+    renderMisTickets();
+  } else {
+    document.addEventListener('DOMContentLoaded', renderMisTickets);
+  }
 </script>
 
 </body>

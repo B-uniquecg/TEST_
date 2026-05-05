@@ -126,7 +126,7 @@
           <th style="width: 90px;">Recibido</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="ticket-rows">
         <tr class="sel" onclick="location='/ticket-detail'">
           <td><span class="check"></span></td>
           <td class="id-cell">SM-00043</td>
@@ -276,7 +276,7 @@
   </div>
 
   <div class="pag">
-    <div>Mostrando <b style="color: var(--ink);">1–12</b> de <b style="color: var(--ink);">142</b> tickets · ordenado por <b style="color: var(--ink);">recibido (desc)</b></div>
+    <div id="pag-info">Cargando tickets…</div>
     <div class="pages">
       <button>‹</button>
       <button class="on">1</button>
@@ -292,10 +292,140 @@
     <span class="live"><b>CONECTADO</b></span>
     <span><b>BASE</b> tropigas_pr_v3</span>
     <span><b>USR</b> j.marrero · UCG IT</span>
-    <span><b>VISTA</b> tickets · 142 total</span>
-    <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+    <span class="right" id="foot-meta"><b>REL</b> 1.1.0</span>
   </div>
 </div>
+
+<script>
+(function () {
+  function clearChildren(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+  var assigneeColors = ['#1C2F5C', '#0E7490', '#7C3AED', '#0891B2', '#9333EA', '#0F766E'];
+  function colorForAssignee(name) {
+    if (!name) return '#9CA3AF';
+    var sum = 0;
+    for (var i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+    return assigneeColors[sum % assigneeColors.length];
+  }
+
+  function statName(s) {
+    return ({ 'Recibido': 'Recibido', 'En progreso': 'Progreso', 'Resuelto': 'Resuelto', 'Cerrado': 'Cerrado' })[s] || s;
+  }
+
+  function fmtSlaCell(t) {
+    var sla = t.slaPct;
+    var ageH = (Date.now() - new Date(t.createdAt).getTime()) / 3600000;
+    var remainingH = Math.max(0, t.slaHours - ageH);
+    var label;
+    if (t.status === 'Resuelto' || t.status === 'Cerrado') {
+      label = 'OK';
+    } else if (remainingH < 1) {
+      label = Math.round(remainingH * 60) + 'm';
+    } else {
+      var h = Math.floor(remainingH);
+      var m = Math.round((remainingH - h) * 60);
+      label = h + 'h ' + m + 'm';
+    }
+    return { label: label, urgent: sla > 75 && t.status !== 'Resuelto' && t.status !== 'Cerrado', done: t.status === 'Resuelto' };
+  }
+
+  function fmtRecibido(iso) {
+    var d = new Date(iso);
+    var ageMs = Date.now() - d.getTime();
+    if (ageMs < 24 * 3600000) {
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+    var months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return d.getDate() + ' ' + months[d.getMonth()];
+  }
+
+  function buildRow(t) {
+    var tr = document.createElement('tr');
+    tr.addEventListener('click', function () { location.href = '/ticket-detail?id=' + t.id; });
+
+    function td(cls, text) {
+      var el = document.createElement('td');
+      if (cls) el.className = cls;
+      if (text != null) el.textContent = text;
+      return el;
+    }
+
+    var checkTd = document.createElement('td');
+    var ck = document.createElement('span');
+    ck.className = 'check';
+    checkTd.appendChild(ck);
+    tr.appendChild(checkTd);
+
+    tr.appendChild(td('id-cell', t.id));
+    tr.appendChild(td('summary', t.summary));
+
+    var emp = (t.empleadoName || '—') + (t.empleadoSucursal ? ' · ' + t.empleadoSucursal.split('·')[0].trim() : '');
+    tr.appendChild(td(null, emp));
+    tr.appendChild(td(null, t.categoria || '—'));
+
+    var impTd = document.createElement('td');
+    var imp = document.createElement('span');
+    imp.className = 'imp imp-' + t.importance;
+    imp.textContent = t.importance;
+    impTd.appendChild(imp);
+    tr.appendChild(impTd);
+
+    var stTd = document.createElement('td');
+    var st = document.createElement('span');
+    var stKey = ({ 'En progreso': 'Progreso' })[t.status] || t.status;
+    st.className = 'stat stat-' + stKey;
+    st.textContent = statName(t.status);
+    stTd.appendChild(st);
+    tr.appendChild(stTd);
+
+    var asTd = document.createElement('td');
+    var asWrap = document.createElement('span');
+    asWrap.className = 'assignee' + (t.assigneeId ? '' : ' un');
+    var asAi = document.createElement('span');
+    asAi.className = 'ai';
+    asAi.textContent = t.assigneeInitials || '?';
+    if (t.assigneeId) asAi.style.background = colorForAssignee(t.assigneeName);
+    asWrap.appendChild(asAi);
+    asWrap.appendChild(document.createTextNode(t.assigneeName || 'Sin asignar'));
+    asTd.appendChild(asWrap);
+    tr.appendChild(asTd);
+
+    var sla = fmtSlaCell(t);
+    var slaTd = td('when' + (sla.urgent ? ' urg' : ''), sla.label);
+    if (sla.done) slaTd.style.color = 'var(--st-done)';
+    tr.appendChild(slaTd);
+
+    tr.appendChild(td('when', fmtRecibido(t.createdAt)));
+
+    return tr;
+  }
+
+  async function render() {
+    if (!window.tg) { setTimeout(render, 30); return; }
+    var tbody = document.getElementById('ticket-rows');
+    if (!tbody) return;
+    var tickets = await window.tg.tickets();
+    clearChildren(tbody);
+    tickets.forEach(function (t) { tbody.appendChild(buildRow(t)); });
+
+    var pag = document.getElementById('pag-info');
+    if (pag) {
+      pag.textContent = 'Mostrando ' + tickets.length + ' de ' + tickets.length + ' tickets · ordenado por recibido (desc)';
+    }
+    var meta = document.getElementById('foot-meta');
+    if (meta) meta.textContent = 'REL 1.1.0 · ' + tickets.length + ' tickets en sistema';
+
+    var tabCount = document.querySelector('.it-tab.on .tab-c');
+    if (tabCount) tabCount.textContent = tickets.length;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', render);
+  } else {
+    render();
+  }
+})();
+</script>
 
 </body>
 </html>

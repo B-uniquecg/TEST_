@@ -6,6 +6,7 @@
   var users = {
     it: {
       role: 'it',
+      id: 'UCG-IT-007',
       name: 'J. Marrero',
       title: 'UCG · Mesa de Ayuda IT',
       initials: 'JM',
@@ -23,6 +24,7 @@
     },
     admin: {
       role: 'admin',
+      id: 'EMP-2104',
       name: 'M. Ríos',
       title: 'Administración · Tropigas PR',
       initials: 'MR',
@@ -39,6 +41,90 @@
       ],
     },
   };
+
+  // ---------- Data layer (window.tg) ----------
+  var tg = {
+    _state: null,
+
+    async init() {
+      if (this._state) return this._state;
+      var r = await fetch('/api/state');
+      this._state = await r.json();
+      return this._state;
+    },
+    async refresh() {
+      this._state = null;
+      return this.init();
+    },
+    async tickets(filter) {
+      var qs = filter ? '?' + new URLSearchParams(filter).toString() : '';
+      var r = await fetch('/api/tickets' + qs);
+      return r.json();
+    },
+    async ticket(id) {
+      var r = await fetch('/api/tickets/' + encodeURIComponent(id));
+      if (!r.ok) return null;
+      return r.json();
+    },
+    async createTicket(data) {
+      var r = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!r.ok) throw new Error('create failed');
+      return r.json();
+    },
+    async patchTicket(id, patch) {
+      var r = await fetch('/api/tickets/' + encodeURIComponent(id), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (!r.ok) throw new Error('patch failed');
+      return r.json();
+    },
+    async addComment(id, comment) {
+      var r = await fetch('/api/tickets/' + encodeURIComponent(id) + '/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(comment),
+      });
+      if (!r.ok) throw new Error('comment failed');
+      return r.json();
+    },
+    async stats() {
+      var r = await fetch('/api/stats');
+      return r.json();
+    },
+    user(id) {
+      if (!this._state) return null;
+      return this._state.users.find(function (u) { return u.id === id; }) || null;
+    },
+    me() { return getCurrentUser(); },
+    fmtAge(ms) {
+      var m = Math.floor(ms / 60000);
+      if (m < 1) return 'ahora';
+      if (m < 60) return m + 'm';
+      var h = Math.floor(m / 60);
+      if (h < 24) return h + 'h ' + (m % 60) + 'm';
+      var d = Math.floor(h / 24);
+      return d + 'd ' + (h % 24) + 'h';
+    },
+    fmtDate(iso) {
+      var d = new Date(iso);
+      var months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      var pad = function (n) { return String(n).padStart(2, '0'); };
+      return pad(d.getDate()) + ' ' + months[d.getMonth()] + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    },
+    importanceClass(imp) {
+      return 'imp-' + imp;
+    },
+    statusKey(s) {
+      return ({ 'Recibido': 'new', 'En progreso': 'prog', 'Resuelto': 'done', 'Cerrado': 'closed' })[s] || 'new';
+    },
+  };
+  window.tg = tg;
 
   function getRole() {
     try { return localStorage.getItem('tg-role'); } catch (e) { return null; }

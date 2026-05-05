@@ -129,89 +129,19 @@
       </div>
 
       <!-- Bulk action bar -->
-      <div class="bulk">
-        <span class="count">2 seleccionados</span>
+      <div class="bulk" id="bulk-bar" style="display:none;">
+        <span class="count" id="bulk-count">0 seleccionados</span>
         <span class="lbl">Acciones rápidas para los tickets marcados →</span>
         <div class="right">
           <button>Cambiar importancia</button>
           <button>Mover a equipo</button>
-          <button class="primary">Asignar a → seleccionar técnico</button>
+          <button class="primary" id="bulk-assign">Asignar a → seleccionar técnico</button>
         </div>
       </div>
 
       <!-- Unassigned cards -->
-      <div class="un-stack">
-        <div class="un-card sel" onclick="this.classList.toggle('sel')">
-          <div class="check"></div>
-          <div class="body-c">
-            <div class="id-row">
-              <span class="id">SM-00042</span>
-              <span class="imp imp-Media">Media</span>
-              <span class="stat stat-Recibido">Recibido</span>
-            </div>
-            <h3>Teams no abre tras actualización</h3>
-            <div class="meta">
-              <span><b>R. Pérez</b> · Ponce · sucursal</span>
-              <span>Categoría <b>Sistemas</b></span>
-              <span>Activo <b>LT-PCE-0089</b></span>
-              <span>Origen <b>Portal Empleado</b></span>
-            </div>
-          </div>
-          <div class="actions">
-            <div class="age">recibido hace 43m</div>
-            <button class="quick">Asignarme</button>
-            <button class="quick">Sugerir técnico</button>
-          </div>
-        </div>
-
-        <div class="un-card sel" onclick="this.classList.toggle('sel')">
-          <div class="check"></div>
-          <div class="body-c">
-            <div class="id-row">
-              <span class="id">SM-00037</span>
-              <span class="imp imp-Alta">Alta</span>
-              <span class="stat stat-Progreso">Reasignar</span>
-            </div>
-            <h3>Pantalla azul al abrir EMAS</h3>
-            <div class="meta">
-              <span><b>D. Cruz</b> · Caguas · sucursal</span>
-              <span>Categoría <b>Hardware</b></span>
-              <span>Activo <b>PC-CGU-0042</b></span>
-              <span>Originalmente · A. Torres (turno fuera)</span>
-            </div>
-          </div>
-          <div class="actions">
-            <div class="age">SLA en 28m</div>
-            <button class="quick">Asignarme</button>
-            <button class="quick">Sugerir técnico</button>
-          </div>
-        </div>
-
-        <!-- Section break -->
-        <div style="margin: 14px 0 6px; font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4); font-weight: 600;">Sugerencias del sistema · auto-asignación</div>
-
-        <div class="un-card">
-          <div class="check"></div>
-          <div class="body-c">
-            <div class="id-row">
-              <span class="id">SM-00044</span>
-              <span class="imp imp-Baja">Baja</span>
-              <span class="stat stat-Recibido">Recibido</span>
-              <span style="font-size: 10px; padding: 2px 6px; background: #FEF3C7; color: #92400E; border-radius: 2px; font-weight: 700; letter-spacing: 0.06em;">SUGIERE → P. Gómez</span>
-            </div>
-            <h3>Solicitar mouse inalámbrico de reemplazo</h3>
-            <div class="meta">
-              <span><b>S. Ortiz</b> · Mayagüez</span>
-              <span>Categoría <b>Hardware</b></span>
-              <span>Razón <b>experiencia previa con la sucursal</b></span>
-            </div>
-          </div>
-          <div class="actions">
-            <div class="age" style="color: var(--ink-4);">acabado de llegar</div>
-            <button class="quick">Aceptar</button>
-            <button class="quick">Cambiar</button>
-          </div>
-        </div>
+      <div class="un-stack" id="un-stack">
+        <div style="font-size:13px;color:var(--ink-4);padding:24px;text-align:center;">Cargando tickets sin asignar…</div>
       </div>
     </div>
 
@@ -221,64 +151,15 @@
         <div class="rail-h">Selección</div>
         <div class="summary-card">
           <div class="lbl">Tickets a asignar</div>
-          <div class="v mono">2 · SM-00042, SM-00037</div>
+          <div class="v mono" id="select-summary">Ninguno seleccionado</div>
         </div>
       </div>
 
       <div class="rail-section">
         <div class="rail-h">Asignar a técnico</div>
-        <div class="desc">El sistema sugiere el mejor según categoría + carga + turno. Puedes elegir manualmente.</div>
-
-        <div class="tech-row">
-          <div class="tech-init">JM</div>
-          <div>
-            <div class="tech-name">J. Marrero <span style="color: var(--ink-4); font-weight: 400; font-size: 11px;">· tú</span></div>
-            <div class="tech-meta">Generalista · turno tarde</div>
-          </div>
-          <div class="tech-load">
-            <div class="n">4</div>
-            <div class="tech-bar"><div class="tech-bar-fill" style="width: 80%; background: var(--st-prog);"></div></div>
-            <div class="lb">carga</div>
-          </div>
-        </div>
-
-        <div class="tech-row sel">
-          <div class="tech-init" style="background: var(--tg-navy);">CR</div>
-          <div>
-            <div class="tech-name">C. Rivera</div>
-            <div class="tech-meta">Redes · turno tarde · ⭐ recom.</div>
-          </div>
-          <div class="tech-load">
-            <div class="n">3</div>
-            <div class="tech-bar"><div class="tech-bar-fill" style="width: 60%; background: var(--st-done);"></div></div>
-            <div class="lb">carga</div>
-          </div>
-        </div>
-
-        <div class="tech-row">
-          <div class="tech-init" style="background: var(--tg-navy);">AT</div>
-          <div>
-            <div class="tech-name">A. Torres</div>
-            <div class="tech-meta">Sistemas · turno fuera 16:00</div>
-          </div>
-          <div class="tech-load">
-            <div class="n">5</div>
-            <div class="tech-bar"><div class="tech-bar-fill" style="width: 100%; background: var(--tg-red);"></div></div>
-            <div class="lb">lleno</div>
-          </div>
-        </div>
-
-        <div class="tech-row">
-          <div class="tech-init" style="background: #8B5CF6;">PG</div>
-          <div>
-            <div class="tech-name">P. Gómez</div>
-            <div class="tech-meta">Hardware · turno tarde</div>
-          </div>
-          <div class="tech-load">
-            <div class="n">2</div>
-            <div class="tech-bar"><div class="tech-bar-fill" style="width: 40%; background: var(--st-done);"></div></div>
-            <div class="lb">carga</div>
-          </div>
+        <div class="desc">Selecciona el técnico que recibirá los tickets marcados.</div>
+        <div id="tech-list">
+          <div style="font-size:12px;color:var(--ink-4);padding:8px 0;">Cargando técnicos…</div>
         </div>
       </div>
 
@@ -308,8 +189,8 @@
       </div>
 
       <div style="display: flex; gap: 8px;">
-        <button class="btn" style="flex: 1;">Cancelar</button>
-        <button class="btn primary" style="flex: 2;">Asignar 2 tickets a C. Rivera</button>
+        <button class="btn" style="flex: 1;" id="cancel-btn">Cancelar</button>
+        <button class="btn primary" style="flex: 2;" id="assign-btn" disabled>Selecciona tickets y técnico</button>
       </div>
     </aside>
   </div>
@@ -318,10 +199,265 @@
     <span class="live"><b>CONECTADO</b></span>
     <span><b>BASE</b> tropigas_pr_v3</span>
     <span><b>USR</b> j.marrero · UCG IT</span>
-    <span><b>VISTA</b> asignar · 2 sin asignar</span>
-    <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+    <span id="vista-foot"><b>VISTA</b> asignar</span>
+    <span class="right"><b>REL</b> 1.1.0</span>
   </div>
 </div>
+
+<script>
+(function () {
+  function clearChildren(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  var selectedTickets = new Set();
+  var selectedTech = null;
+  var unassigned = [];
+  var techs = [];
+
+  function fmtAge(ms) {
+    var m = Math.floor(ms / 60000);
+    if (m < 1) return 'recién';
+    if (m < 60) return 'hace ' + m + 'm';
+    var h = Math.floor(m / 60);
+    if (h < 24) return 'hace ' + h + 'h';
+    return 'hace ' + Math.floor(h / 24) + 'd';
+  }
+
+  function buildUnCard(t) {
+    var card = document.createElement('div');
+    card.className = 'un-card' + (selectedTickets.has(t.id) ? ' sel' : '');
+    card.dataset.id = t.id;
+
+    var check = document.createElement('div');
+    check.className = 'check';
+    card.appendChild(check);
+
+    var body = document.createElement('div');
+    body.className = 'body-c';
+    var idRow = document.createElement('div');
+    idRow.className = 'id-row';
+    var idEl = document.createElement('span');
+    idEl.className = 'id';
+    idEl.textContent = t.id;
+    idRow.appendChild(idEl);
+    var imp = document.createElement('span');
+    imp.className = 'imp imp-' + t.importance;
+    imp.textContent = t.importance;
+    idRow.appendChild(imp);
+    var stat = document.createElement('span');
+    stat.className = 'stat stat-Recibido';
+    stat.textContent = 'Recibido';
+    idRow.appendChild(stat);
+    body.appendChild(idRow);
+    var h3 = document.createElement('h3');
+    h3.textContent = t.summary;
+    body.appendChild(h3);
+    var meta = document.createElement('div');
+    meta.className = 'meta';
+    function metaSpan(label, value) {
+      var s = document.createElement('span');
+      if (label) s.appendChild(document.createTextNode(label + ' '));
+      var b = document.createElement('b');
+      b.textContent = value;
+      s.appendChild(b);
+      meta.appendChild(s);
+    }
+    var sucCity = t.empleadoSucursal ? t.empleadoSucursal.split('·')[0].trim() : '';
+    metaSpan('', (t.empleadoName || '—') + (sucCity ? ' · ' + sucCity : ''));
+    metaSpan('Categoría', t.categoria);
+    if (t.assetId) metaSpan('Activo', t.assetId);
+    metaSpan('Origen', 'Portal Empleado');
+    body.appendChild(meta);
+    card.appendChild(body);
+
+    var actions = document.createElement('div');
+    actions.className = 'actions';
+    var age = document.createElement('div');
+    age.className = 'age';
+    age.textContent = fmtAge(Date.now() - new Date(t.createdAt).getTime());
+    actions.appendChild(age);
+    var assignMe = document.createElement('button');
+    assignMe.className = 'quick';
+    assignMe.textContent = 'Asignarme';
+    assignMe.addEventListener('click', async function (e) {
+      e.stopPropagation();
+      var me = (window.__tgGetCurrentUser && window.__tgGetCurrentUser()) || { id: 'UCG-IT-007' };
+      await window.tg.patchTicket(t.id, { assigneeId: me.id, status: 'En progreso' });
+      await load();
+    });
+    actions.appendChild(assignMe);
+    card.appendChild(actions);
+
+    card.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      if (selectedTickets.has(t.id)) selectedTickets.delete(t.id);
+      else selectedTickets.add(t.id);
+      render();
+    });
+
+    return card;
+  }
+
+  function buildTechRow(tech, load) {
+    var row = document.createElement('div');
+    row.className = 'tech-row' + (selectedTech === tech.id ? ' sel' : '');
+    var ini = document.createElement('div');
+    ini.className = 'tech-init';
+    ini.textContent = tech.initials;
+    if (selectedTech === tech.id) ini.style.background = 'var(--tg-navy)';
+    row.appendChild(ini);
+    var info = document.createElement('div');
+    var name = document.createElement('div');
+    name.className = 'tech-name';
+    name.textContent = tech.name;
+    info.appendChild(name);
+    var meta = document.createElement('div');
+    meta.className = 'tech-meta';
+    meta.textContent = tech.team || 'IT Support';
+    info.appendChild(meta);
+    row.appendChild(info);
+    var loadWrap = document.createElement('div');
+    loadWrap.className = 'tech-load';
+    var n = document.createElement('div');
+    n.className = 'n';
+    n.textContent = load.open;
+    loadWrap.appendChild(n);
+    var bar = document.createElement('div');
+    bar.className = 'tech-bar';
+    var fill = document.createElement('div');
+    fill.className = 'tech-bar-fill';
+    var pct = Math.min(100, (load.open / 5) * 100);
+    fill.style.width = pct + '%';
+    fill.style.background = pct > 80 ? 'var(--tg-red)' : pct > 50 ? 'var(--st-prog)' : 'var(--st-done)';
+    bar.appendChild(fill);
+    loadWrap.appendChild(bar);
+    var lb = document.createElement('div');
+    lb.className = 'lb';
+    lb.textContent = pct >= 100 ? 'lleno' : 'carga';
+    loadWrap.appendChild(lb);
+    row.appendChild(loadWrap);
+
+    row.addEventListener('click', function () {
+      selectedTech = (selectedTech === tech.id) ? null : tech.id;
+      render();
+    });
+
+    return row;
+  }
+
+  function render() {
+    var stack = document.getElementById('un-stack');
+    if (stack) {
+      clearChildren(stack);
+      if (!unassigned.length) {
+        var empty = document.createElement('div');
+        empty.style.cssText = 'padding:32px;text-align:center;color:var(--ink-4);font-size:13px;';
+        empty.textContent = '¡No hay tickets sin asignar!';
+        stack.appendChild(empty);
+      } else {
+        unassigned.forEach(function (t) { stack.appendChild(buildUnCard(t)); });
+      }
+    }
+
+    var techList = document.getElementById('tech-list');
+    if (techList) {
+      clearChildren(techList);
+      techs.forEach(function (entry) {
+        techList.appendChild(buildTechRow(entry.tech, entry.load));
+      });
+    }
+
+    var bar = document.getElementById('bulk-bar');
+    if (bar) {
+      bar.style.display = selectedTickets.size ? 'flex' : 'none';
+      var c = document.getElementById('bulk-count');
+      if (c) c.textContent = selectedTickets.size + ' seleccionados';
+    }
+    var summary = document.getElementById('select-summary');
+    if (summary) {
+      if (selectedTickets.size === 0) summary.textContent = 'Ninguno seleccionado';
+      else summary.textContent = selectedTickets.size + ' · ' + Array.from(selectedTickets).join(', ');
+    }
+    var btn = document.getElementById('assign-btn');
+    if (btn) {
+      var canAssign = selectedTickets.size > 0 && selectedTech;
+      btn.disabled = !canAssign;
+      if (canAssign) {
+        var t = techs.find(function (e) { return e.tech.id === selectedTech; });
+        btn.textContent = 'Asignar ' + selectedTickets.size + ' ticket' + (selectedTickets.size === 1 ? '' : 's') + ' a ' + (t ? t.tech.name : '...');
+      } else if (selectedTickets.size === 0) {
+        btn.textContent = 'Selecciona tickets';
+      } else {
+        btn.textContent = 'Selecciona técnico';
+      }
+    }
+    var vista = document.getElementById('vista-foot');
+    if (vista) {
+      clearChildren(vista);
+      var lbl = document.createElement('b');
+      lbl.textContent = 'VISTA';
+      vista.appendChild(lbl);
+      vista.appendChild(document.createTextNode(' asignar · ' + unassigned.length + ' sin asignar'));
+    }
+    var asignarTab = document.querySelector('.it-tabs a[href="/asignar"] .tab-c');
+    if (asignarTab) asignarTab.textContent = pad(unassigned.length);
+  }
+
+  async function load() {
+    if (!window.tg) { setTimeout(load, 30); return; }
+    var data = await Promise.all([window.tg.tickets(), window.tg.stats()]);
+    var tickets = data[0];
+    var stats = data[1];
+    unassigned = tickets.filter(function (t) { return !t.assigneeId && t.status !== 'Resuelto' && t.status !== 'Cerrado'; });
+    var state = await window.tg.init();
+    var techUsers = state.users.filter(function (u) { return u.role === 'it'; });
+    techs = techUsers.map(function (u) {
+      var loadEntry = stats.techLoad.find(function (l) { return l.id === u.id; }) || { open: 0, closed: 0 };
+      return { tech: u, load: loadEntry };
+    });
+    selectedTickets = new Set(Array.from(selectedTickets).filter(function (id) {
+      return unassigned.some(function (t) { return t.id === id; });
+    }));
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var assign = document.getElementById('assign-btn');
+    if (assign) {
+      assign.addEventListener('click', async function () {
+        if (assign.disabled) return;
+        var ids = Array.from(selectedTickets);
+        assign.disabled = true;
+        try {
+          for (var i = 0; i < ids.length; i++) {
+            await window.tg.patchTicket(ids[i], { assigneeId: selectedTech, status: 'En progreso' });
+          }
+          selectedTickets.clear();
+          await load();
+        } finally {
+          assign.disabled = false;
+        }
+      });
+    }
+    var cancel = document.getElementById('cancel-btn');
+    if (cancel) {
+      cancel.addEventListener('click', function () {
+        selectedTickets.clear();
+        selectedTech = null;
+        render();
+      });
+    }
+    var bulkAssign = document.getElementById('bulk-assign');
+    if (bulkAssign) {
+      bulkAssign.addEventListener('click', function () {
+        var rail = document.querySelector('.col-rail');
+        if (rail) rail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    load();
+  });
+})();
+</script>
 
 </body>
 </html>

@@ -155,28 +155,28 @@
     <div class="kpi-row">
       <div class="kpi recibido">
         <div class="kpi-k">Recibidos · hoy</div>
-        <div class="kpi-v">14</div>
-        <div class="kpi-trend up">↑ 2 vs. ayer</div>
+        <div class="kpi-v" id="kpi-recibidos">—</div>
+        <div class="kpi-trend up" id="kpi-recibidos-sub">cargando…</div>
       </div>
       <div class="kpi progreso">
         <div class="kpi-k">En progreso</div>
-        <div class="kpi-v">09</div>
-        <div class="kpi-trend">4 con SLA en riesgo</div>
+        <div class="kpi-v" id="kpi-progreso">—</div>
+        <div class="kpi-trend" id="kpi-progreso-sub">cargando…</div>
       </div>
       <div class="kpi resuelto">
         <div class="kpi-k">Resueltos · hoy</div>
-        <div class="kpi-v">11</div>
-        <div class="kpi-trend up">↑ promedio 2.8h</div>
+        <div class="kpi-v" id="kpi-resueltos">—</div>
+        <div class="kpi-trend up" id="kpi-resueltos-sub">cargando…</div>
       </div>
       <div class="kpi sla">
         <div class="kpi-k">SLA cumplido</div>
-        <div class="kpi-v">94<span class="unit">%</span></div>
-        <div class="kpi-trend up">objetivo 90%</div>
+        <div class="kpi-v" id="kpi-sla">—<span class="unit">%</span></div>
+        <div class="kpi-trend up" id="kpi-sla-sub">objetivo 90%</div>
       </div>
       <div class="kpi alta">
         <div class="kpi-k">Alta importancia</div>
-        <div class="kpi-v">03</div>
-        <div class="kpi-trend down">1 vence en &lt;1h</div>
+        <div class="kpi-v" id="kpi-alta">—</div>
+        <div class="kpi-trend down" id="kpi-alta-sub">cargando…</div>
       </div>
     </div>
 
@@ -187,7 +187,7 @@
         <div class="panel">
           <div class="panel-h">
             <h4>Tickets recientes</h4>
-            <div class="meta"><a href="/tickets" style="color: var(--ink-4); text-decoration: none;">Ver todos · 14 →</a></div>
+            <div class="meta"><a href="/tickets" id="dash-ver-todos" style="color: var(--ink-4); text-decoration: none;">Ver todos →</a></div>
           </div>
           <table class="tbl">
             <thead>
@@ -195,7 +195,7 @@
                 <th>ID</th><th>Resumen</th><th>Empleado</th><th>Imp.</th><th>Estado</th><th>SLA</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="dash-rows">
               <tr onclick="location='/ticket-detail'">
                 <td class="id-cell">SM-00043</td>
                 <td class="summary">Impresora no imprime facturas · HP-LJ-204</td>
@@ -354,27 +354,8 @@
             <div class="meta">en vivo</div>
           </div>
           <div class="panel-b" style="padding: 6px 16px 14px;">
-            <div class="feed">
-              <div class="feed-row">
-                <div class="feed-time">14:35</div>
-                <div class="feed-text"><b>Sistema</b> aplicó SLA <span class="tag imp-Alta">Alta</span> a <span class="id">SM-00043</span></div>
-              </div>
-              <div class="feed-row">
-                <div class="feed-time">14:34</div>
-                <div class="feed-text"><b>J. Marrero</b> respondió a <span class="id">SM-00043</span></div>
-              </div>
-              <div class="feed-row">
-                <div class="feed-time">14:21</div>
-                <div class="feed-text"><b>A. Torres</b> resolvió <span class="id">SM-00040</span> · Salesforce</div>
-              </div>
-              <div class="feed-row">
-                <div class="feed-time">14:08</div>
-                <div class="feed-text"><b>C. Rivera</b> escaló <span class="id">SM-00031</span> a redes ISP</div>
-              </div>
-              <div class="feed-row">
-                <div class="feed-time">13:52</div>
-                <div class="feed-text"><b>Empleado</b> abrió <span class="id">SM-00042</span> · Teams no abre</div>
-              </div>
+            <div class="feed" id="dash-feed">
+              <div class="feed-row"><div class="feed-time">—</div><div class="feed-text">Cargando actividad…</div></div>
             </div>
           </div>
         </div>
@@ -387,9 +368,172 @@
     <span><b>BASE</b> tropigas_pr_v3</span>
     <span><b>USR</b> j.marrero · UCG IT</span>
     <span><b>VISTA</b> dashboard</span>
-    <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+    <span class="right" id="dash-foot"><b>REL</b> 1.1.0</span>
   </div>
 </div>
+
+<script>
+(function () {
+  function clearChildren(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+  function pad(n, w) { return String(n).padStart(w || 2, '0'); }
+  function fmtTime(iso) {
+    var d = new Date(iso);
+    return pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function fmtSlaCell(t) {
+    var ageH = (Date.now() - new Date(t.createdAt).getTime()) / 3600000;
+    var remainingH = Math.max(0, t.slaHours - ageH);
+    if (t.status === 'Resuelto' || t.status === 'Cerrado') return { label: 'OK', urgent: false, done: true };
+    if (remainingH < 1) return { label: Math.round(remainingH * 60) + 'm', urgent: true };
+    var h = Math.floor(remainingH);
+    var m = Math.round((remainingH - h) * 60);
+    return { label: h + 'h ' + m + 'm', urgent: ageH / t.slaHours > 0.75 };
+  }
+
+  function buildRow(t) {
+    var tr = document.createElement('tr');
+    tr.addEventListener('click', function () { location.href = '/ticket-detail?id=' + t.id; });
+
+    function td(cls, text) {
+      var el = document.createElement('td');
+      if (cls) el.className = cls;
+      if (text != null) el.textContent = text;
+      return el;
+    }
+
+    tr.appendChild(td('id-cell', t.id));
+    tr.appendChild(td('summary', t.summary));
+
+    var sucCity = t.empleadoSucursal ? t.empleadoSucursal.split('·')[0].trim() : '';
+    tr.appendChild(td(null, (t.empleadoName || '—') + (sucCity ? ' · ' + sucCity : '')));
+
+    var impTd = document.createElement('td');
+    var imp = document.createElement('span');
+    imp.className = 'imp imp-' + t.importance;
+    imp.textContent = t.importance;
+    impTd.appendChild(imp);
+    tr.appendChild(impTd);
+
+    var stTd = document.createElement('td');
+    var st = document.createElement('span');
+    var stKey = ({ 'En progreso': 'Progreso' })[t.status] || t.status;
+    st.className = 'stat stat-' + stKey;
+    st.textContent = t.status;
+    stTd.appendChild(st);
+    tr.appendChild(stTd);
+
+    var sla = fmtSlaCell(t);
+    var slaTd = td(null, sla.label);
+    if (sla.done) slaTd.style.color = 'var(--st-done)';
+    if (sla.urgent) slaTd.style.color = 'var(--tg-red)';
+    tr.appendChild(slaTd);
+
+    return tr;
+  }
+
+  function buildFeedRow(comment, ticket) {
+    var row = document.createElement('div');
+    row.className = 'feed-row';
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', function () { location.href = '/ticket-detail?id=' + ticket.id; });
+    var t = document.createElement('div');
+    t.className = 'feed-time';
+    t.textContent = fmtTime(comment.createdAt);
+    var x = document.createElement('div');
+    x.className = 'feed-text';
+    var b = document.createElement('b');
+    b.textContent = comment.author || 'Sistema';
+    x.appendChild(b);
+    var verb = comment.role === 'empleado' ? ' reportó ' : comment.type === 'note' ? ' anotó en ' : comment.role === 'system' ? ' actualizó ' : ' respondió a ';
+    x.appendChild(document.createTextNode(verb));
+    var idSpan = document.createElement('span');
+    idSpan.className = 'id';
+    idSpan.textContent = ticket.id;
+    x.appendChild(idSpan);
+    if (ticket.summary) {
+      x.appendChild(document.createTextNode(' · '));
+      x.appendChild(document.createTextNode(ticket.summary.slice(0, 36)));
+    }
+    row.appendChild(t);
+    row.appendChild(x);
+    return row;
+  }
+
+  async function render() {
+    if (!window.tg) { setTimeout(render, 30); return; }
+    var tickets = await window.tg.tickets();
+    var stats   = await window.tg.stats();
+
+    // KPIs
+    var todayMs = 24 * 3600 * 1000;
+    var newToday = tickets.filter(function (t) { return Date.now() - new Date(t.createdAt).getTime() < todayMs; }).length;
+    var resolvedToday = stats.resolvedToday;
+    var inProgress = stats.byStatus['En progreso'] || 0;
+    var altaOpen = tickets.filter(function (t) { return t.importance === 'Alta' && t.status !== 'Resuelto' && t.status !== 'Cerrado'; }).length;
+    var resolved = (stats.byStatus['Resuelto'] || 0) + (stats.byStatus['Cerrado'] || 0);
+    var slaOk = tickets.length ? Math.round(((tickets.length - stats.overdueAlta) / tickets.length) * 100) : 100;
+
+    var setText = function (id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+    setText('kpi-recibidos', pad(newToday));
+    setText('kpi-recibidos-sub', stats.unassigned + ' sin asignar');
+    setText('kpi-progreso', pad(inProgress));
+    setText('kpi-progreso-sub', altaOpen + ' alta · ' + stats.unassigned + ' sin asignar');
+    setText('kpi-resueltos', pad(resolvedToday));
+    setText('kpi-resueltos-sub', resolved + ' totales históricos');
+    var slaEl = document.getElementById('kpi-sla');
+    if (slaEl) {
+      clearChildren(slaEl);
+      slaEl.appendChild(document.createTextNode(slaOk));
+      var u = document.createElement('span');
+      u.className = 'unit';
+      u.textContent = '%';
+      slaEl.appendChild(u);
+    }
+    setText('kpi-sla-sub', stats.overdueAlta + ' fuera de SLA · objetivo 90%');
+    setText('kpi-alta', pad(altaOpen));
+    setText('kpi-alta-sub', stats.unassigned + ' sin asignar');
+
+    // Cola activa: top 8 by status (open first)
+    var open = tickets.filter(function (t) { return t.status !== 'Resuelto' && t.status !== 'Cerrado'; });
+    var firstFew = open.slice(0, 8);
+    var tbody = document.getElementById('dash-rows');
+    if (tbody) {
+      clearChildren(tbody);
+      firstFew.forEach(function (t) { tbody.appendChild(buildRow(t)); });
+    }
+
+    var ver = document.getElementById('dash-ver-todos');
+    if (ver) ver.textContent = 'Ver todos · ' + tickets.length + ' →';
+
+    // Activity feed: latest comments from latest tickets
+    var feed = document.getElementById('dash-feed');
+    if (feed) {
+      clearChildren(feed);
+      var entries = [];
+      tickets.forEach(function (t) {
+        if (t.comments && t.comments.length) {
+          t.comments.slice(-2).forEach(function (c) { entries.push({ comment: c, ticket: t }); });
+        } else {
+          entries.push({ comment: { author: 'Empleado', role: 'empleado', type: 'message', body: '', createdAt: t.createdAt }, ticket: t });
+        }
+      });
+      entries.sort(function (a, b) { return new Date(b.comment.createdAt) - new Date(a.comment.createdAt); });
+      entries.slice(0, 6).forEach(function (e) { feed.appendChild(buildFeedRow(e.comment, e.ticket)); });
+    }
+
+    var foot = document.getElementById('dash-foot');
+    if (foot) foot.textContent = 'REL 1.1.0 · ' + tickets.length + ' tickets';
+
+    var tabCount = document.querySelector('.it-tabs a[href="/tickets"] .tab-c');
+    if (tabCount) tabCount.textContent = tickets.length;
+    var asignarCount = document.querySelector('.it-tabs a[href="/asignar"] .tab-c');
+    if (asignarCount) asignarCount.textContent = pad(stats.unassigned);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
+  else render();
+})();
+</script>
 
 </body>
 </html>

@@ -642,6 +642,262 @@ function showTab(id, btn) {
   document.querySelectorAll('.det-tab').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
 }
+
+(function () {
+  function clearChildren(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function fmtTime(iso) {
+    var d = new Date(iso);
+    return pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function fmtAge(ms) {
+    var m = Math.floor(ms / 60000);
+    if (m < 1) return 'ahora';
+    if (m < 60) return 'hace ' + m + 'm';
+    var h = Math.floor(m / 60);
+    if (h < 24) return 'hace ' + h + 'h';
+    var d = Math.floor(h / 24);
+    return 'hace ' + d + 'd';
+  }
+  function initialsFor(name) {
+    if (!name) return '··';
+    return name.split(' ').filter(Boolean).map(function (p) { return p[0] || ''; }).slice(0, 2).join('').toUpperCase();
+  }
+  function getId() {
+    var p = new URLSearchParams(location.search);
+    return p.get('id') || 'SM-00043';
+  }
+
+  function showError(msg) {
+    var banner = document.querySelector('.tk-banner');
+    if (!banner) return;
+    clearChildren(banner);
+    var p = document.createElement('div');
+    p.style.cssText = 'padding:32px;text-align:center;color:#9F1239;';
+    p.textContent = msg;
+    banner.appendChild(p);
+  }
+
+  async function load() {
+    if (!window.tg) { setTimeout(load, 30); return; }
+    var id = getId();
+    var t = await window.tg.ticket(id);
+    if (!t) {
+      showError('Ticket ' + id + ' no encontrado.');
+      return;
+    }
+    render(t);
+  }
+
+  function render(t) {
+    document.title = 'UCG IT · Detalle ' + t.id;
+
+    // Crumb
+    var crumb = document.querySelector('.tk-crumb');
+    if (crumb) {
+      clearChildren(crumb);
+      var a = document.createElement('a');
+      a.href = '/tickets';
+      a.textContent = 'Gestión de Tickets';
+      crumb.appendChild(a);
+      crumb.appendChild(document.createTextNode(' / ' + t.id));
+    }
+
+    // Banner header chips
+    var banner = document.querySelector('.tk-banner');
+    if (banner) {
+      var idEl = banner.querySelector('.tk-id');
+      if (idEl) idEl.textContent = t.id;
+      var impEl = banner.querySelector('.imp');
+      if (impEl) {
+        impEl.className = 'imp imp-' + t.importance;
+        impEl.textContent = t.importance + ' · ' + t.slaHours + 'h SLA';
+      }
+      var statEl = banner.querySelector('.stat');
+      if (statEl) {
+        var stKey = ({ 'En progreso': 'Progreso' })[t.status] || t.status;
+        statEl.className = 'stat stat-' + stKey;
+        statEl.textContent = t.status;
+      }
+      var idRow = banner.querySelector('.tk-id-row');
+      if (idRow) {
+        var monoChip = idRow.querySelector('span[style*="mono"]');
+        if (monoChip) monoChip.textContent = t.empleadoId + (t.assetId ? ' · ' + t.assetId : '');
+      }
+      var h1 = banner.querySelector('.tk-h1');
+      if (h1) h1.textContent = t.summary;
+
+      var meta = banner.querySelector('.tk-meta');
+      if (meta) {
+        clearChildren(meta);
+        function addMeta(label, value) {
+          var s = document.createElement('span');
+          if (label) s.appendChild(document.createTextNode(label + ' '));
+          var b = document.createElement('b');
+          b.textContent = value;
+          s.appendChild(b);
+          if (label === 'Recibido') {
+            s.appendChild(document.createTextNode(' · ' + fmtAge(Date.now() - new Date(t.createdAt).getTime())));
+          }
+          meta.appendChild(s);
+        }
+        var sucCity = t.empleadoSucursal ? t.empleadoSucursal.split('·')[0].trim() : '';
+        addMeta('', t.empleadoName + (sucCity ? ' · ' + sucCity : ''));
+        addMeta('Categoría', t.categoria);
+        addMeta('Origen', 'Portal del Empleado');
+        addMeta('Recibido', fmtTime(t.createdAt) + ' AST');
+        addMeta('Asignado a', t.assigneeName || 'Sin asignar');
+      }
+    }
+
+    // Thread
+    var thread = document.querySelector('.thread');
+    if (thread) {
+      clearChildren(thread);
+      var comments = t.comments || [];
+      comments.forEach(function (c) {
+        var cssClass = c.role === 'empleado' ? 'emp' : c.role === 'system' ? 'system' : (c.type === 'note' ? 'note' : 'it');
+        var msg = document.createElement('div');
+        msg.className = 'msg ' + cssClass;
+        var h = document.createElement('div');
+        h.className = 'msg-h';
+        var who = document.createElement('div');
+        who.className = 'msg-who';
+        var av = document.createElement('div');
+        av.className = 'av';
+        av.textContent = c.role === 'system' ? 'SYS' : initialsFor(c.author);
+        var name = document.createElement('span');
+        name.className = 'msg-name';
+        name.textContent = c.author;
+        var role = document.createElement('span');
+        role.className = 'msg-role';
+        role.textContent = c.role === 'system' ? 'auto' : c.role === 'empleado' ? 'empleado' : 'UCG IT';
+        who.appendChild(av);
+        who.appendChild(name);
+        who.appendChild(role);
+        h.appendChild(who);
+        var whenWrap = document.createElement('div');
+        var when = document.createElement('span');
+        when.className = 'msg-when';
+        when.textContent = fmtTime(c.createdAt) + ' · ' + fmtAge(Date.now() - new Date(c.createdAt).getTime());
+        whenWrap.appendChild(when);
+        if (c.type === 'note') {
+          var tag = document.createElement('span');
+          tag.className = 'msg-tag internal';
+          tag.textContent = 'nota interna';
+          whenWrap.appendChild(tag);
+        } else if (c.role !== 'system') {
+          var tag2 = document.createElement('span');
+          tag2.className = 'msg-tag public';
+          tag2.textContent = c.role === 'empleado' ? 'vía Portal' : 'mensaje';
+          whenWrap.appendChild(tag2);
+        }
+        h.appendChild(whenWrap);
+        msg.appendChild(h);
+        var body = document.createElement('div');
+        body.className = 'msg-body';
+        c.body.split('\n').forEach(function (line) {
+          var p = document.createElement('p');
+          p.textContent = line;
+          body.appendChild(p);
+        });
+        msg.appendChild(body);
+        thread.appendChild(msg);
+      });
+
+      var convCount = document.querySelector('.det-tab .c');
+      if (convCount) convCount.textContent = comments.length;
+    }
+
+    // Composer wiring
+    var composer = document.querySelector('.composer');
+    if (composer) {
+      var textarea = composer.querySelector('textarea');
+      var modeButtons = composer.querySelectorAll('.mode');
+      var sendBtn = composer.querySelector('.actions button.btn.primary');
+      var resolveBtn = composer.querySelector('.actions button.btn:not(.primary)');
+
+      var currentMode = 'message';
+      modeButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          modeButtons.forEach(function (b) { b.classList.remove('on'); });
+          btn.classList.add('on');
+          if (btn.classList.contains('note')) currentMode = 'note';
+          else currentMode = 'message';
+        });
+      });
+
+      if (sendBtn && textarea && !sendBtn.dataset.wired) {
+        sendBtn.dataset.wired = '1';
+        sendBtn.addEventListener('click', async function () {
+          var body = textarea.value.trim();
+          if (!body) return;
+          var me = (window.__tgGetCurrentUser && window.__tgGetCurrentUser()) || { id: 'UCG-IT-007' };
+          sendBtn.disabled = true;
+          sendBtn.textContent = 'Enviando…';
+          try {
+            await window.tg.addComment(t.id, { body: body, authorId: me.id, type: currentMode });
+            textarea.value = '';
+            await load();
+          } catch (e) {
+            alert('No se pudo enviar.');
+          } finally {
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Enviar';
+          }
+        });
+      }
+      if (resolveBtn && !resolveBtn.dataset.wired) {
+        resolveBtn.dataset.wired = '1';
+        resolveBtn.addEventListener('click', async function () {
+          await window.tg.patchTicket(t.id, { status: 'Resuelto' });
+          await load();
+        });
+      }
+    }
+
+    // Banner action buttons
+    var bannerBtns = document.querySelectorAll('.tk-banner .btn');
+    bannerBtns.forEach(function (btn) {
+      if (btn.dataset.wired) return;
+      var label = btn.textContent.trim();
+      if (label.indexOf('Resuelto') > -1) {
+        btn.dataset.wired = '1';
+        btn.addEventListener('click', async function () {
+          await window.tg.patchTicket(t.id, { status: 'Resuelto' });
+          await load();
+        });
+      } else if (label === 'Reasignar') {
+        btn.dataset.wired = '1';
+        btn.addEventListener('click', async function () {
+          var users = await window.tg.users ? null : null;
+          var state = await window.tg.init();
+          var techs = state.users.filter(function (u) { return u.role === 'it'; });
+          var options = techs.map(function (u, i) { return (i + 1) + '. ' + u.name + ' (' + u.id + ')'; }).join('\n');
+          var pick = prompt('Reasignar a:\n' + options + '\n\nNúmero:', '1');
+          if (!pick) return;
+          var idx = parseInt(pick, 10) - 1;
+          if (idx < 0 || idx >= techs.length) return;
+          await window.tg.patchTicket(t.id, { assigneeId: techs[idx].id, status: t.status === 'Recibido' ? 'En progreso' : t.status });
+          await load();
+        });
+      } else if (label === 'Posponer') {
+        btn.dataset.wired = '1';
+        btn.addEventListener('click', async function () {
+          await window.tg.patchTicket(t.id, { status: 'Recibido' });
+          await load();
+        });
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', load);
+  } else {
+    load();
+  }
+})();
 </script>
 
 </body>

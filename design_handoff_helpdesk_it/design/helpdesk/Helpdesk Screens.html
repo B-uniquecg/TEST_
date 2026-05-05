@@ -527,13 +527,6 @@
 </head>
 <body>
 
-<!-- Persona switcher -->
-<div class="persona-bar">
-  <div class="lbl">Vista</div>
-  <button id="btn-emp" class="on" onclick="show('emp')"><span class="dot"></span>Empleado · Reportar a IT</button>
-  <button id="btn-it" onclick="show('it')"><span class="dot"></span>UCG · Mesa de Ayuda IT</button>
-</div>
-
 <!-- ============================================================ -->
 <!-- SCREEN 1 — EMPLOYEE PORTAL (self-service) -->
 <!-- ============================================================ -->
@@ -584,7 +577,7 @@
           <div id="save-banner" class="save-banner">
             <span>Tu ticket fue enviado a <b>UCG · Mesa de Ayuda IT</b>. Recibirás actualizaciones por correo y aquí.</span>
             <span class="id-chip" id="new-ticket-id">SM-00043</span>
-            <button onclick="show('it')">Ver cómo lo trabaja IT →</button>
+            <button onclick="location='/dashboard'">Ver cómo lo trabaja IT →</button>
           </div>
 
           <div class="emp-form">

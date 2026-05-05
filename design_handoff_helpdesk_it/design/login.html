@@ -184,7 +184,7 @@
       <h1>¿Quién entra hoy?</h1>
       <p class="sub">Selecciona tu rol para continuar al sistema.</p>
 
-      <a href="/dashboard" class="role-btn it">
+      <a href="/dashboard" class="role-btn it" data-role="it">
         <div class="ico">IT</div>
         <div class="text">
           <div class="role-name">UCG · Mesa de Ayuda IT</div>
@@ -193,7 +193,7 @@
         <div class="arrow">→</div>
       </a>
 
-      <a href="/portal" class="role-btn admin">
+      <a href="/portal" class="role-btn admin" data-role="admin">
         <div class="ico">AD</div>
         <div class="text">
           <div class="role-name">Administración</div>
@@ -208,5 +208,12 @@
       </div>
     </div>
   </div>
+  <script>
+    document.querySelectorAll('[data-role]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        try { localStorage.setItem('tg-role', this.dataset.role); } catch (e) {}
+      });
+    });
+  </script>
 </body>
 </html>

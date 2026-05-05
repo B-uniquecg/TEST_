@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>Configuración · Tropigas Mesa de Ayuda IT</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<script src="/_dev-nav.js" defer></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100vh;
+    background: var(--paper-2);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 14px;
+  }
+
+  .topbar {
+    height: 56px;
+    background: var(--tg-navy);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 3px solid var(--tg-red);
+  }
+  .topbar .brand {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+  }
+  .topbar .pr-flag {
+    display: inline-block; width: 14px; height: 10px;
+    background: var(--tg-navy); margin-left: 6px; position: relative;
+    border: 1px solid rgba(255,255,255,0.4);
+    vertical-align: 1px;
+  }
+  .topbar .pr-flag::before {
+    content:''; position: absolute; inset:0 0 0 0;
+    background: linear-gradient(to right, var(--tg-red) 0 35%, transparent 35%);
+  }
+  .topbar .sub {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    opacity: 0.7;
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,0.2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .body { padding: 32px 24px 80px; max-width: 1080px; margin: 0 auto; }
+
+  .page-h { margin-bottom: 28px; }
+  .page-h .crumb {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .page-h h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .page-h .sub {
+    font-size: 13px;
+    color: var(--ink-4);
+    margin-top: 6px;
+  }
+
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow-1);
+  }
+  .card h2 {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--tg-navy);
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  /* Identity card */
+  .id-card { text-align: center; }
+  .id-card .avatar {
+    width: 76px; height: 76px;
+    display: grid; place-items: center;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    margin: 6px auto 16px;
+  }
+  .id-card.b-navy .avatar { background: var(--tg-navy); }
+  .id-card.b-red  .avatar { background: var(--tg-red); }
+  .id-card .name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .id-card .role {
+    font-size: 12px;
+    color: var(--ink-4);
+    margin-bottom: 14px;
+  }
+  .id-card .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 3px;
+  }
+  .id-card.b-navy .badge { background: rgba(28, 47, 92, 0.08); color: var(--tg-navy); }
+  .id-card.b-red  .badge { background: var(--tg-red-soft);     color: var(--imp-alta-fg); }
+
+  /* KV grid */
+  .kv-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .kv {
+    padding: 11px 0;
+    display: flex; flex-direction: column;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .kv:nth-last-child(-n+2) { border-bottom: none; padding-bottom: 0; }
+  .kv .k {
+    font-size: 10px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .kv .v { font-size: 13px; color: var(--ink); }
+  .kv .v.mono { font-family: var(--font-mono); font-size: 12px; }
+
+  /* Buttons */
+  .action-row { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  .btn {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .btn:hover { border-color: var(--ink-3); }
+  .btn.primary {
+    background: var(--tg-navy); color: #fff; border-color: var(--tg-navy);
+  }
+  .btn.primary:hover { background: var(--tg-navy-deep); }
+  .btn.danger {
+    color: var(--imp-alta-fg);
+    border-color: var(--imp-alta-bg);
+    background: var(--paper);
+  }
+  .btn.danger:hover { background: var(--imp-alta-bg); border-color: var(--tg-red); }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 800px) {
+    .grid, .row-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">TROPIGAS<span class="pr-flag"></span></div>
+    <div class="sub">Configuración · Mi cuenta</div>
+  </div>
+
+  <div class="body">
+    <div class="page-h">
+      <div class="crumb">UCG · Mesa de Ayuda IT / Configuración</div>
+      <h1 id="greeting">Mi cuenta</h1>
+      <div class="sub" id="subline">Información de tu perfil y preferencias del sistema.</div>
+    </div>
+
+    <div class="grid">
+      <div class="card id-card" id="identity">
+        <h2>Identidad</h2>
+        <div id="identity-content"></div>
+      </div>
+
+      <div class="card">
+        <h2>Información del perfil</h2>
+        <div class="kv-list" id="kv-list"></div>
+        <div class="action-row">
+          <button class="btn">Editar perfil</button>
+          <button class="btn">Solicitar cambio</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <h2>Sesión activa</h2>
+        <div class="kv-list">
+          <div class="kv"><span class="k">Sesión iniciada</span><span class="v mono" id="session-start">—</span></div>
+          <div class="kv"><span class="k">IP</span><span class="v mono">10.42.0.84</span></div>
+          <div class="kv"><span class="k">Navegador</span><span class="v" id="browser">—</span></div>
+          <div class="kv"><span class="k">Sistema</span><span class="v" id="os">—</span></div>
+        </div>
+        <div class="action-row">
+          <button class="btn danger" id="btn-logout">Cerrar sesión</button>
+          <button class="btn">Cerrar otras sesiones</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Preferencias</h2>
+        <div class="kv-list">
+          <div class="kv"><span class="k">Idioma</span><span class="v">Español (es-PR)</span></div>
+          <div class="kv"><span class="k">Zona horaria</span><span class="v">AST · UTC-4</span></div>
+          <div class="kv"><span class="k">Email</span><span class="v">Activadas</span></div>
+          <div class="kv"><span class="k">SMS</span><span class="v">Desactivadas</span></div>
+        </div>
+        <div class="action-row">
+          <button class="btn primary">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function init() {
+        if (!window.__tgGetCurrentUser) { setTimeout(init, 30); return; }
+        var u = window.__tgGetCurrentUser();
+
+        var idCard = document.getElementById('identity');
+        idCard.classList.add('b-' + u.brand);
+        var idC = document.getElementById('identity-content');
+
+        var av = document.createElement('div');
+        av.className = 'avatar';
+        av.textContent = u.initials;
+        idC.appendChild(av);
+
+        var name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = u.name;
+        idC.appendChild(name);
+
+        var role = document.createElement('div');
+        role.className = 'role';
+        role.textContent = u.title;
+        idC.appendChild(role);
+
+        var badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = u.role === 'it' ? 'Mesa de Ayuda IT' : 'Empleado Tropigas';
+        idC.appendChild(badge);
+
+        var kvList = document.getElementById('kv-list');
+        var monoRe = /^EMP-|^UCG-|^LT-|^x\d|@/;
+        u.kvs.forEach(function (pair) {
+          var d = document.createElement('div');
+          d.className = 'kv';
+          var k = document.createElement('span');
+          k.className = 'k';
+          k.textContent = pair[0];
+          var v = document.createElement('span');
+          v.className = 'v' + (monoRe.test(pair[1]) ? ' mono' : '');
+          v.textContent = pair[1];
+          d.appendChild(k);
+          d.appendChild(v);
+          kvList.appendChild(d);
+        });
+
+        var first = u.name.split(' ').pop();
+        document.getElementById('greeting').textContent = 'Hola, ' + first + '.';
+        document.getElementById('subline').textContent = 'Tu cuenta en ' + u.title + '.';
+
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        var now = new Date();
+        document.getElementById('session-start').textContent =
+          pad(now.getDate()) + '/' + pad(now.getMonth() + 1) + ' · ' +
+          pad(now.getHours()) + ':' + pad(now.getMinutes()) + ' AST';
+
+        var ua = navigator.userAgent;
+        var browser = 'Otro';
+        if (/Edg\//.test(ua)) browser = 'Edge';
+        else if (/Chrome\//.test(ua)) browser = 'Chrome';
+        else if (/Firefox\//.test(ua)) browser = 'Firefox';
+        else if (/Safari\//.test(ua)) browser = 'Safari';
+        document.getElementById('browser').textContent = browser;
+
+        var os = 'Otro';
+        if (/Windows/.test(ua)) os = 'Windows';
+        else if (/Mac OS X/.test(ua)) os = 'macOS';
+        else if (/Linux/.test(ua)) os = 'Linux';
+        document.getElementById('os').textContent = os;
+
+        document.getElementById('btn-logout').addEventListener('click', function () {
+          if (window.__tgLogout) window.__tgLogout();
+          else location.href = '/';
+        });
+      }
+      init();
+    })();
+  </script>
+</body>
+</html>

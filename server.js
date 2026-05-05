@@ -18,6 +18,7 @@ const pages = {
   '/ticket-detail': 'design/helpdesk/pages/ticket-detail.html',
   '/kb': 'design/helpdesk/pages/kb.html',
   '/reportes': 'design/helpdesk/pages/reportes.html',
+  '/settings': 'design/settings.html',
 };
 
 for (const [route, file] of Object.entries(pages)) {

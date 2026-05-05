@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>UCG IT · Gestión de Tickets</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<link rel="stylesheet" href="/design/helpdesk/_helpdesk-shared.css" />
+<style>
+  .app { display: grid; grid-template-rows: 56px auto auto 1fr 22px; height: 100vh; }
+  .body { overflow: hidden; background: var(--paper); display: flex; flex-direction: column; }
+
+  .toolbar { padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--paper); display: flex; gap: 12px; align-items: center; }
+  .toolbar .search { flex: 1; max-width: 360px; position: relative; }
+  .toolbar .search input { padding-left: 32px; }
+  .toolbar .search::before { content: '⌕'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-4); font-size: 14px; }
+  .chip { font-size: 11px; font-weight: 500; padding: 6px 12px; border-radius: 14px; color: var(--ink-3); border: 1px solid var(--line); background: var(--paper); display: inline-flex; align-items: center; gap: 6px; }
+  .chip:hover { background: var(--paper-2); }
+  .chip.on { background: var(--tg-navy); color: var(--paper); border-color: var(--tg-navy); }
+  .chip .n { font-family: var(--font-mono); font-size: 10px; opacity: 0.7; }
+  .toolbar .right { margin-left: auto; display: flex; gap: 8px; }
+
+  .filter-row { padding: 10px 24px; border-bottom: 1px solid var(--line); background: var(--paper-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; }
+  .filter-row .lbl { font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; margin-right: 4px; }
+
+  .tbl-wrap { flex: 1; overflow-y: auto; }
+  table.full { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.full thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--paper-2); border-bottom: 1px solid var(--line);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--ink-4); text-align: left; padding: 12px 14px;
+  }
+  table.full tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); color: var(--ink-2); vertical-align: middle; }
+  table.full tbody tr { cursor: pointer; }
+  table.full tbody tr:hover td { background: #F8FAFD; }
+  table.full tbody tr.sel td { background: #EFF4FB; }
+  table.full .id-cell { font-family: var(--font-mono); font-weight: 700; color: var(--ink); font-size: 12px; }
+  table.full .summary { color: var(--ink); font-weight: 500; }
+  table.full .when { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); }
+  table.full .when.urg { color: var(--tg-red); font-weight: 600; }
+  table.full .assignee { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2); }
+  table.full .assignee .ai { width: 22px; height: 22px; border-radius: 50%; background: var(--tg-red); color: var(--paper); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  table.full .assignee.un { color: var(--ink-4); font-style: italic; }
+  table.full .assignee.un .ai { background: var(--paper-3); color: var(--ink-4); }
+
+  .check { width: 14px; height: 14px; border: 1.5px solid var(--ink-5); border-radius: 2px; display: inline-block; vertical-align: middle; cursor: pointer; }
+
+  .pag { padding: 10px 24px; border-top: 1px solid var(--line); background: var(--paper); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-4); }
+  .pag .pages { display: flex; gap: 4px; }
+  .pag .pages button { padding: 4px 10px; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+  .pag .pages button.on { background: var(--tg-navy); color: var(--paper); border-color: var(--tg-navy); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div>
+        <div class="brand-name">TROPIGAS<span class="pr-flag"></span></div>
+        <div class="brand-sub">Portal Operativo · UCG IT</div>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div class="top-meta-cell"><div class="top-meta-k">Sistema</div><div class="top-meta-v live">Operativo</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">SLA día</div><div class="top-meta-v" style="color: #4ADE80;">94%</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">Hora AST</div><div class="top-meta-v mono">14:35</div></div>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="top-user">
+      <div class="top-user-init" style="background: var(--tg-red); color: var(--paper);">JM</div>
+      <div><div class="top-user-name">J. Marrero</div><div class="top-user-role">UCG · Mesa de Ayuda IT</div></div>
+    </div>
+  </div>
+
+  <div class="it-tabs">
+    <a href="/dashboard" class="it-tab"><span class="tab-num">[01]</span>Dashboard</a>
+    <a href="/tickets" class="it-tab on"><span class="tab-num">[02]</span>Gestión de Tickets <span class="tab-c">14</span></a>
+    <a href="/asignar" class="it-tab"><span class="tab-num">[03]</span>Asignar <span class="tab-c">02</span></a>
+    <a href="/kb" class="it-tab"><span class="tab-num">[04]</span>Base de Conocimiento <span class="tab-c">38</span></a>
+    <a href="/reportes" class="it-tab"><span class="tab-num">[05]</span>Reportes</a>
+    <div class="it-tabs-spacer"></div>
+    <div class="it-tabs-meta"><span>Mostrando <span class="pip">14 / 142</span></span></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search"><input type="search" placeholder="Buscar por ID, empleado, sucursal, descripción…" /></div>
+    <button class="chip on">Todos <span class="n">142</span></button>
+    <button class="chip">Mis tickets <span class="n">04</span></button>
+    <button class="chip">Equipo <span class="n">14</span></button>
+    <button class="chip">Sin asignar <span class="n">02</span></button>
+    <button class="chip">SLA en riesgo <span class="n">04</span></button>
+    <div class="right">
+      <button class="btn">Vista ▾</button>
+      <button class="btn">Exportar</button>
+      <button class="btn primary">+ Nuevo ticket</button>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <span class="lbl">Filtros:</span>
+    <select style="width: auto; padding: 5px 28px 5px 10px; font-size: 12px;"><option>Estado · todos</option><option>Recibido</option><option>En progreso</option><option>Resuelto</option><option>Cerrado</option></select>
+    <select style="width: auto; padding: 5px 28px 5px 10px; font-size: 12px;"><option>Importancia · todas</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+    <select style="width: auto; padding: 5px 28px 5px 10px; font-size: 12px;"><option>Categoría · todas</option><option>Hardware</option><option>Sistemas</option><option>Red</option><option>Accesos</option></select>
+    <select style="width: auto; padding: 5px 28px 5px 10px; font-size: 12px;"><option>Sucursal · todas</option><option>Bayamón</option><option>Ponce</option><option>Mayagüez</option><option>Caguas</option><option>Arecibo</option></select>
+    <select style="width: auto; padding: 5px 28px 5px 10px; font-size: 12px;"><option>Asignado · cualquiera</option><option>J. Marrero</option><option>C. Rivera</option><option>A. Torres</option><option>P. Gómez</option></select>
+    <select style="width: auto; padding: 5px 28px 5px 10px; font-size: 12px;"><option>Hoy</option><option>Esta semana</option><option>Este mes</option><option>Personalizado</option></select>
+    <button class="chip" style="margin-left: auto;">Limpiar filtros</button>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="full">
+      <thead>
+        <tr>
+          <th style="width: 30px;"><span class="check"></span></th>
+          <th style="width: 110px;">ID ↓</th>
+          <th>Resumen</th>
+          <th style="width: 180px;">Empleado · Sucursal</th>
+          <th style="width: 120px;">Categoría</th>
+          <th style="width: 80px;">Imp.</th>
+          <th style="width: 110px;">Estado</th>
+          <th style="width: 130px;">Asignado</th>
+          <th style="width: 110px;">SLA</th>
+          <th style="width: 90px;">Recibido</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="sel" onclick="location='/ticket-detail'">
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00043</td>
+          <td class="summary">Impresora no imprime facturas · HP-LJ-204</td>
+          <td>M. Ríos · Bayamón</td>
+          <td>Hardware</td>
+          <td><span class="imp imp-Alta">Alta</span></td>
+          <td><span class="stat stat-Recibido">Recibido</span></td>
+          <td><span class="assignee"><span class="ai">JM</span>J. Marrero</span></td>
+          <td class="when urg">3h 58m</td>
+          <td class="when">14:32</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00042</td>
+          <td class="summary">Teams no abre tras actualización</td>
+          <td>R. Pérez · Ponce</td>
+          <td>Sistemas</td>
+          <td><span class="imp imp-Media">Media</span></td>
+          <td><span class="stat stat-Recibido">Recibido</span></td>
+          <td><span class="assignee un"><span class="ai">?</span>Sin asignar</span></td>
+          <td class="when">11h 40m</td>
+          <td class="when">13:52</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00041</td>
+          <td class="summary">Salesforce no carga reportes · varios usuarios</td>
+          <td>L. Soto · Mayagüez</td>
+          <td>Sistemas</td>
+          <td><span class="imp imp-Alta">Alta</span></td>
+          <td><span class="stat stat-Progreso">Progreso</span></td>
+          <td><span class="assignee"><span class="ai" style="background: var(--tg-navy);">AT</span>A. Torres</span></td>
+          <td class="when urg">42m</td>
+          <td class="when">13:30</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00040</td>
+          <td class="summary">Correo no recibe desde proveedores externos</td>
+          <td>R. Núñez · Caguas</td>
+          <td>Sistemas</td>
+          <td><span class="imp imp-Media">Media</span></td>
+          <td><span class="stat stat-Resuelto">Resuelto</span></td>
+          <td><span class="assignee"><span class="ai" style="background: var(--tg-navy);">AT</span>A. Torres</span></td>
+          <td class="when" style="color: var(--st-done);">2h 14m</td>
+          <td class="when">12:18</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00039</td>
+          <td class="summary">Solicitud · alta de usuario nuevo (despacho)</td>
+          <td>L. Vega · Bayamón</td>
+          <td>Accesos</td>
+          <td><span class="imp imp-Baja">Baja</span></td>
+          <td><span class="stat stat-Progreso">Progreso</span></td>
+          <td><span class="assignee"><span class="ai">JM</span>J. Marrero</span></td>
+          <td class="when">19h</td>
+          <td class="when">11:05</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00038</td>
+          <td class="summary">VPN se desconecta cada 10 min</td>
+          <td>M. Ríos · Bayamón</td>
+          <td>Red</td>
+          <td><span class="imp imp-Media">Media</span></td>
+          <td><span class="stat stat-Progreso">Progreso</span></td>
+          <td><span class="assignee"><span class="ai" style="background: var(--tg-navy);">CR</span>C. Rivera</span></td>
+          <td class="when">7h 22m</td>
+          <td class="when">07:13</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00037</td>
+          <td class="summary">Pantalla azul al abrir EMAS</td>
+          <td>D. Cruz · Caguas</td>
+          <td>Hardware</td>
+          <td><span class="imp imp-Alta">Alta</span></td>
+          <td><span class="stat stat-Progreso">Progreso</span></td>
+          <td><span class="assignee un"><span class="ai">?</span>Sin asignar</span></td>
+          <td class="when urg">28m</td>
+          <td class="when">ayer</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00036</td>
+          <td class="summary">Cambio de equipo · laptop nueva para gerencia</td>
+          <td>L. Vega · Bayamón</td>
+          <td>Hardware</td>
+          <td><span class="imp imp-Baja">Baja</span></td>
+          <td><span class="stat stat-Progreso">Progreso</span></td>
+          <td><span class="assignee"><span class="ai" style="background: #8B5CF6;">PG</span>P. Gómez</span></td>
+          <td class="when">18h</td>
+          <td class="when">ayer</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00035</td>
+          <td class="summary">EMAS — error al cerrar caja del día</td>
+          <td>D. Cruz · Caguas</td>
+          <td>Sistemas</td>
+          <td><span class="imp imp-Media">Media</span></td>
+          <td><span class="stat stat-Progreso">Progreso</span></td>
+          <td><span class="assignee"><span class="ai" style="background: var(--tg-navy);">AT</span>A. Torres</span></td>
+          <td class="when">2d</td>
+          <td class="when">2 may</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00031</td>
+          <td class="summary">WiFi sucursal lento · planta completa</td>
+          <td>F. Méndez · Arecibo</td>
+          <td>Red</td>
+          <td><span class="imp imp-Media">Media</span></td>
+          <td><span class="stat stat-Progreso">Progreso</span></td>
+          <td><span class="assignee"><span class="ai" style="background: var(--tg-navy);">CR</span>C. Rivera</span></td>
+          <td class="when">3d</td>
+          <td class="when">1 may</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00029</td>
+          <td class="summary">Reset de contraseña · EMAS</td>
+          <td>M. Ríos · Bayamón</td>
+          <td>Accesos</td>
+          <td><span class="imp imp-Baja">Baja</span></td>
+          <td><span class="stat stat-Resuelto">Resuelto</span></td>
+          <td><span class="assignee"><span class="ai">JM</span>J. Marrero</span></td>
+          <td class="when" style="color: var(--st-done);">12 min</td>
+          <td class="when">29 abr</td>
+        </tr>
+        <tr>
+          <td><span class="check"></span></td>
+          <td class="id-cell">SM-00027</td>
+          <td class="summary">Monitor 2 no enciende · oficina ventas</td>
+          <td>S. Ortiz · Mayagüez</td>
+          <td>Hardware</td>
+          <td><span class="imp imp-Baja">Baja</span></td>
+          <td><span class="stat stat-Cerrado">Cerrado</span></td>
+          <td><span class="assignee"><span class="ai" style="background: #8B5CF6;">PG</span>P. Gómez</span></td>
+          <td class="when" style="color: var(--st-done);">4h</td>
+          <td class="when">28 abr</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pag">
+    <div>Mostrando <b style="color: var(--ink);">1–12</b> de <b style="color: var(--ink);">142</b> tickets · ordenado por <b style="color: var(--ink);">recibido (desc)</b></div>
+    <div class="pages">
+      <button>‹</button>
+      <button class="on">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>…</button>
+      <button>12</button>
+      <button>›</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="live"><b>CONECTADO</b></span>
+    <span><b>BASE</b> tropigas_pr_v3</span>
+    <span><b>USR</b> j.marrero · UCG IT</span>
+    <span><b>VISTA</b> tickets · 142 total</span>
+    <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+  </div>
+</div>
+
+</body>
+</html>

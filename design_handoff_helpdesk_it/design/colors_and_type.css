@@ -1,0 +1,227 @@
+/* =========================================================
+   Tropigas PR — Design Tokens
+   Colors + Type for the IT Helpdesk / UCG Portal Operativo.
+   Derived from tickets-tropigas.html and tropigaspuertorico.com.
+   ========================================================= */
+
+/* Webfonts ------------------------------------------------ */
+/* Display: Playfair Display (closest free match for the wordmark serif on the brand site).
+   UI:      Rubik (already used by the helpdesk app).
+   Mono:    JetBrains Mono (for ticket IDs, timestamps, telemetry). */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Rubik:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  /* ---- BRAND ---------------------------------------------- */
+  --tg-navy:          #0F224A;   /* primary brand — chrome, headers, statusbar */
+  --tg-navy-deep:     #0A1838;   /* darker navy for shaded panels (rgba 0/.18 over navy) */
+  --tg-red:           #E30512;   /* flag red — primary action, accent line, alert */
+  --tg-red-dark:      #B3040E;   /* hover/active for red */
+  --tg-red-soft:      #FEE2E2;   /* tag bg — Alta importancia */
+  --tg-red-tint:      #FEF2F2;   /* destructive button hover */
+
+  /* PR flag — used as 16x11 inline mark next to wordmark */
+  --pr-flag-stripe:   #E30512;
+  --pr-flag-white:    #FFFFFF;
+  --pr-flag-triangle: var(--tg-navy);
+
+  /* ---- INK / PAPER (neutrals) ----------------------------- */
+  --paper:            #FFFFFF;
+  --paper-2:          #F4F5F7;   /* app canvas background */
+  --paper-3:          #E5E7EB;   /* dividers, hover-fill, scrollthumb track */
+
+  --ink:              #111827;   /* fg-1 — body text, KPI numbers */
+  --ink-2:            #374151;   /* fg-2 — secondary body */
+  --ink-3:            #4B5563;   /* fg-3 — labels, table headers */
+  --ink-4:            #6B7280;   /* fg-4 — meta, hint, footer */
+  --ink-5:            #9CA3AF;   /* fg-5 — placeholder, disabled */
+
+  --line:             #E5E7EB;   /* default border */
+  --line-soft:        #F3F4F6;   /* divider between repeating rows */
+
+  /* ---- SEMANTIC: ticket status ---------------------------- */
+  --st-new:           #E30512;   /* Recibido — same red as brand to draw eye */
+  --st-prog:          #D97706;   /* En progreso — amber */
+  --st-done:          #10B981;   /* Resuelto — emerald */
+  --st-closed:        #6B7280;   /* Cerrado — neutral grey */
+
+  /* Importance tag fills */
+  --imp-alta-bg:      #FEE2E2;   --imp-alta-fg:  #E30512;
+  --imp-media-bg:     #FEF3C7;   --imp-media-fg: #D97706;
+  --imp-baja-bg:      #E5E7EB;   --imp-baja-fg:  #4B5563;
+
+  /* SLA risk states */
+  --sla-vencido:      #E30512;
+  --sla-riesgo:       #B86E00;
+  --sla-ok:           #10B981;
+
+  /* "Live" pulse dot (system operativo, conectado) */
+  --live-pulse:       #4ADE80;
+
+  /* ---- ELEVATION ------------------------------------------ */
+  --shadow-1:         0 1px 2px rgba(0,0,0,0.03);    /* table cards */
+  --shadow-2:         0 1px 3px rgba(0,0,0,0.05);    /* panels */
+  --shadow-3:         0 4px 6px rgba(0,0,0,0.05);    /* hover lift */
+  --shadow-modal:     0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+
+  /* Focus ring — narrow, brand-tinted */
+  --focus-navy:       0 0 0 3px rgba(15, 34, 74, 0.10);
+  --focus-red:        0 0 0 3px rgba(227, 5, 18, 0.10);
+
+  /* ---- RADIUS / SPACING ----------------------------------- */
+  --radius:           6px;       /* cards, buttons, fields */
+  --radius-sm:        4px;       /* tags, pills, small chips */
+  --radius-lg:        8px;       /* modal, large containers */
+  --radius-pill:      999px;
+
+  --space-1:          4px;
+  --space-2:          8px;
+  --space-3:          12px;
+  --space-4:          16px;
+  --space-5:          20px;
+  --space-6:          24px;
+  --space-8:          32px;
+
+  /* ---- TYPE FAMILIES -------------------------------------- */
+  --font-display:     "Playfair Display", "Times New Roman", Georgia, serif;
+  --font-ui:          "Rubik", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:        "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* ---------------------------------------------------------- */
+/* Base / semantic type                                       */
+/* ---------------------------------------------------------- */
+
+html, body {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--paper-2);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Display — for marketing surfaces, login splash, hero numerics. */
+.tg-display,
+h1.tg-hero {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--tg-navy);
+}
+
+/* Wordmark — the brand "TROPIGAS" lockup. */
+.tg-wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* App heading scale (from the helpdesk) */
+h1, .tg-h1 {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+h2, .tg-h2 {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+/* Section / panel titles — uppercase, tracked. */
+h3, .tg-h3, .tg-panel-title {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--tg-navy);
+}
+
+/* Eyebrow / tab / tag labels — extra-tracked, tiny. */
+.tg-eyebrow, .tg-label {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.tg-eyebrow-xs {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-5);
+}
+
+/* Body */
+p, .tg-body {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.tg-body-sm {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.tg-meta {
+  font-size: 12px;
+  color: var(--ink-4);
+}
+.tg-hint {
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+/* Mono — ticket IDs (SM-00001), timestamps, KPI numerics. */
+.tg-mono, code, kbd, pre {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+.tg-id {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+.tg-id-chip {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  background: var(--tg-navy);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+}
+
+/* KPI numerics — tabular, oversized. */
+.tg-kpi {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 56px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.tg-kpi-sm {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}

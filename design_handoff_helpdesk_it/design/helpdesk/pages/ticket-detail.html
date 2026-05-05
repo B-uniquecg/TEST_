@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>UCG IT · Detalle SM-00043</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<link rel="stylesheet" href="/design/helpdesk/_helpdesk-shared.css" />
+<style>
+  .app { display: grid; grid-template-rows: 56px auto auto auto 1fr 22px; height: 100vh; }
+  .body { overflow: hidden; background: var(--paper-2); display: grid; grid-template-columns: 1fr 320px; }
+  .col-main { overflow-y: auto; padding: 0; }
+  .col-rail { overflow-y: auto; background: var(--paper); border-left: 1px solid var(--line); padding: 18px; }
+
+  /* Ticket header banner */
+  .tk-banner { background: var(--paper); border-bottom: 1px solid var(--line); padding: 18px 28px; }
+  .tk-crumb { font-size: 11px; color: var(--ink-4); margin-bottom: 8px; }
+  .tk-crumb a { color: var(--ink-4); text-decoration: none; }
+  .tk-crumb a:hover { color: var(--tg-navy); text-decoration: underline; }
+  .tk-id-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tk-id { font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: var(--ink); background: var(--paper-2); padding: 4px 10px; border-radius: 3px; letter-spacing: 0.04em; }
+  .tk-h1 { font-family: var(--font-display); font-weight: 600; font-size: 24px; color: var(--ink); line-height: 1.2; letter-spacing: -0.005em; }
+  .tk-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--ink-4); }
+  .tk-meta b { color: var(--ink-2); font-weight: 500; }
+  .tk-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+  /* Detail tabs */
+  .det-tabs { background: var(--paper); border-bottom: 1px solid var(--line); padding: 0 28px; display: flex; align-items: stretch; gap: 0; }
+  .det-tab { padding: 10px 18px; font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4); border-bottom: 3px solid transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: none; }
+  .det-tab:hover { color: var(--ink-2); }
+  .det-tab.on { color: var(--tg-navy); border-bottom-color: var(--tg-red); }
+  .det-tab .n { color: var(--tg-red); font-size: 10px; }
+  .det-tab .c { background: var(--paper-3); color: var(--ink-3); padding: 1px 6px; border-radius: 10px; font-size: 10px; font-family: var(--font-mono); }
+  .det-tab.on .c { background: var(--tg-red); color: var(--paper); }
+
+  .pane { display: none; padding: 22px 28px; }
+  .pane.on { display: block; }
+
+  /* === CONVERSACIÓN === */
+  .thread { display: flex; flex-direction: column; gap: 14px; }
+  .msg { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; box-shadow: var(--shadow-1); }
+  .msg.it { border-left: 3px solid var(--tg-red); }
+  .msg.emp { border-left: 3px solid var(--ink-4); }
+  .msg.note { background: #FFFBEB; border: 1px dashed #F59E0B; }
+  .msg.system { background: var(--paper-2); border: 1px dashed var(--line); }
+  .msg-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; flex-wrap: wrap; gap: 8px; }
+  .msg-who { display: flex; align-items: center; gap: 8px; }
+  .av { width: 28px; height: 28px; background: var(--tg-navy); color: var(--paper); font-size: 10px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .msg.it .av { background: var(--tg-red); }
+  .msg.note .av { background: #F59E0B; color: var(--paper); }
+  .msg.system .av { background: var(--ink-4); color: var(--paper); }
+  .msg-name { font-weight: 600; color: var(--ink); }
+  .msg-role { color: var(--ink-4); font-size: 11px; margin-left: 4px; }
+  .msg-when { font-family: var(--font-mono); color: var(--ink-4); font-size: 11px; }
+  .msg-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; margin-left: 4px; }
+  .msg-tag.public { background: #DBEAFE; color: #1E40AF; }
+  .msg-tag.internal { background: #FEF3C7; color: #92400E; }
+  .msg-body { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+  .msg-body p + p { margin-top: 8px; }
+  .msg-attach { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .msg-attach .at { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 3px; font-size: 11px; color: var(--ink-2); font-family: var(--font-mono); }
+
+  .composer { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 14px; margin-top: 14px; box-shadow: var(--shadow-2); }
+  .composer .modes { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+  .composer .mode { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 10px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink-3); background: var(--paper); }
+  .composer .mode.on { background: var(--tg-navy); color: var(--paper); border-color: var(--tg-navy); }
+  .composer .mode.note.on { background: #F59E0B; border-color: #F59E0B; }
+  .composer textarea { min-height: 90px; }
+  .composer .actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .composer .actions .left { color: var(--ink-4); font-size: 11px; flex: 1; }
+
+  /* === SOLUCIÓN === */
+  .sol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+  .sol-full { grid-column: 1 / -1; }
+  .step-list { display: flex; flex-direction: column; }
+  .step-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); align-items: center; }
+  .step-row:last-child { border: none; }
+  .step-num { width: 22px; height: 22px; background: var(--paper-2); color: var(--ink-2); border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); }
+  .step-row.done .step-num { background: var(--st-done); color: var(--paper); }
+  .step-text { font-size: 13px; color: var(--ink); }
+  .step-row.done .step-text { color: var(--ink-4); }
+  .step-meta { font-family: var(--font-mono); color: var(--ink-4); font-size: 11px; }
+  .step-text code { font-family: var(--font-mono); background: var(--paper-2); padding: 1px 5px; border-radius: 2px; font-size: 11px; color: var(--ink); }
+  .step-add { padding: 10px 0 4px; display: flex; gap: 8px; align-items: center; }
+  .step-add input { flex: 1; }
+  .verify { display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 4px; }
+  .verify .ic { width: 28px; height: 28px; background: var(--st-done); color: var(--paper); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+  .verify .t { font-size: 13px; font-weight: 600; color: #065F46; }
+  .verify .s { font-size: 12px; color: #047857; margin-top: 2px; }
+
+  /* === BITÁCORA === */
+  .log-filter { padding: 10px 16px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--paper-2); font-size: 11px; }
+  .log-filter .lbl { color: var(--ink-4); font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; }
+  .log-tbl { width: 100%; border-collapse: collapse; }
+  .log-tbl th { padding: 8px 16px; background: var(--paper-2); border-bottom: 1px solid var(--line); font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; text-align: left; }
+  .log-tbl td { padding: 11px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: top; font-size: 12px; }
+  .log-tbl tr:last-child td { border: none; }
+  .log-tbl .ts { font-family: var(--font-mono); color: var(--ink-4); white-space: nowrap; }
+  .log-tbl .actor .n { color: var(--ink); font-weight: 500; font-size: 12px; }
+  .log-tbl .actor .r { color: var(--ink-4); font-size: 11px; }
+  .log-tbl .actor.system .n { color: var(--ink-4); font-style: italic; }
+  .ev { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; display: inline-block; }
+  .ev-create { background: #DBEAFE; color: #1E40AF; }
+  .ev-assign { background: #FCE7F3; color: #9F1239; }
+  .ev-status { background: #FEF3C7; color: #92400E; }
+  .ev-message { background: var(--paper-2); color: var(--ink-3); }
+  .ev-note { background: #FEF3C7; color: #92400E; }
+  .ev-sla { background: var(--tg-red-soft); color: var(--imp-alta-fg); }
+  .ev-resolve { background: #D1FAE5; color: #065F46; }
+  .log-tbl .det-d { color: var(--ink-2); line-height: 1.5; }
+  .log-tbl .det-d code { font-family: var(--font-mono); background: var(--paper-2); padding: 1px 5px; border-radius: 2px; font-size: 11px; color: var(--ink); }
+
+  /* RIGHT rail */
+  .rail-block { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow-1); margin-bottom: 14px; overflow: hidden; }
+  .rail-h { padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--paper-2); display: flex; justify-content: space-between; align-items: center; }
+  .rail-h h4 { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--tg-navy); margin: 0; }
+  .rail-h .ed { font-size: 11px; color: var(--ink-4); cursor: pointer; }
+  .rail-h .ed:hover { color: var(--tg-navy); text-decoration: underline; }
+  .rail-b { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .kv { display: grid; grid-template-columns: 90px 1fr; gap: 10px; font-size: 12px; }
+  .kv .k { color: var(--ink-4); }
+  .kv .v { color: var(--ink); font-weight: 500; }
+  .kv .v.mono { font-family: var(--font-mono); font-weight: 600; }
+  .sla-rail { display: flex; flex-direction: column; gap: 6px; }
+  .sla-rail .nums { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--font-mono); }
+  .sla-rail .nums .left { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .sla-rail .nums .right { font-size: 11px; color: var(--ink-4); }
+  .sla-rail .track { height: 6px; background: var(--paper-3); border-radius: 3px; overflow: hidden; }
+  .sla-rail .fill { height: 100%; background: var(--st-done); }
+  .sla-rail .lbl { font-size: 11px; color: var(--ink-4); }
+  .assignee-row { display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--paper-2); border-radius: 3px; }
+  .assignee-init { width: 30px; height: 30px; background: var(--tg-red); color: var(--paper); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
+  .assignee-name { font-size: 13px; font-weight: 600; }
+  .assignee-role { font-size: 11px; color: var(--ink-4); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div>
+        <div class="brand-name">TROPIGAS<span class="pr-flag"></span></div>
+        <div class="brand-sub">Portal Operativo · UCG IT</div>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div class="top-meta-cell"><div class="top-meta-k">Sistema</div><div class="top-meta-v live">Operativo</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">Cola IT</div><div class="top-meta-v">14 abiertos</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">Hora AST</div><div class="top-meta-v mono">14:41</div></div>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="top-user">
+      <div class="top-user-init" style="background: var(--tg-red); color: var(--paper);">JM</div>
+      <div><div class="top-user-name">J. Marrero</div><div class="top-user-role">UCG · Mesa de Ayuda IT</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="it-tabs">
+    <a href="/dashboard" class="it-tab"><span class="tab-num">[01]</span>Dashboard</a>
+    <a href="/tickets" class="it-tab"><span class="tab-num">[02]</span>Gestión de Tickets <span class="tab-c">14</span></a>
+    <a href="/asignar" class="it-tab"><span class="tab-num">[03]</span>Asignar <span class="tab-c">02</span></a>
+    <a href="/kb" class="it-tab"><span class="tab-num">[04]</span>Base de Conocimiento <span class="tab-c">38</span></a>
+    <a href="/reportes" class="it-tab"><span class="tab-num">[05]</span>Reportes</a>
+    <div class="it-tabs-spacer"></div>
+    <div class="it-tabs-meta"><span>Vista <span class="pip">DETALLE</span> · vinculado a EMP-2104</span></div>
+  </div>
+
+  <!-- TICKET BANNER -->
+  <div class="tk-banner">
+    <div class="tk-crumb"><a href="/tickets">Gestión de Tickets</a> / SM-00043</div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;">
+      <div>
+        <div class="tk-id-row">
+          <span class="tk-id">SM-00043</span>
+          <span class="imp imp-Alta">Alta · 4h SLA</span>
+          <span class="stat stat-Progreso">En progreso</span>
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-4);">EMP-2104 · HP-LJ-204</span>
+        </div>
+        <div class="tk-h1">Impresora no imprime facturas · HP LaserJet de Administración</div>
+        <div class="tk-meta">
+          <span><b>M. Ríos</b> · Administración Bayamón</span>
+          <span>Categoría <b>Hardware</b></span>
+          <span>Origen <b>Portal del Empleado</b></span>
+          <span>Recibido <b>14:32 AST</b> · hace 9m</span>
+          <span>Asignado a <b>J. Marrero</b></span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-shrink: 0;">
+        <a href="/tickets" class="btn">← Cola</a>
+        <button class="btn">Posponer</button>
+        <button class="btn">Reasignar</button>
+        <button class="btn primary">Marcar Resuelto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL TABS -->
+  <div class="det-tabs">
+    <button class="det-tab on" onclick="showTab('conv', this)"><span class="n">[A]</span>Conversación <span class="c">3</span></button>
+    <button class="det-tab" onclick="showTab('sol', this)"><span class="n">[B]</span>Solución</button>
+    <button class="det-tab" onclick="showTab('log', this)"><span class="n">[C]</span>Bitácora <span class="c">9</span></button>
+    <button class="det-tab" onclick="showTab('act', this)"><span class="n">[D]</span>Activo · 1</button>
+    <button class="det-tab" onclick="showTab('rel', this)"><span class="n">[E]</span>Relacionados · 2</button>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+    <div class="col-main">
+
+      <!-- === CONVERSACIÓN === -->
+      <div id="pane-conv" class="pane on">
+        <div class="thread">
+          <div class="msg system">
+            <div class="msg-h">
+              <div class="msg-who">
+                <div class="av">SYS</div>
+                <span class="msg-name">Sistema</span>
+                <span class="msg-role">auto</span>
+              </div>
+              <span class="msg-when">14:32 · hace 9m</span>
+            </div>
+            <div class="msg-body">Ticket creado por <b>M. Ríos</b> vía Portal del Empleado · categoría Hardware · activo HP-LJ-204 vinculado automáticamente · SLA Alta aplicado (vence 18:32 AST).</div>
+          </div>
+
+          <div class="msg emp">
+            <div class="msg-h">
+              <div class="msg-who">
+                <div class="av">MR</div>
+                <span class="msg-name">Marisol Ríos</span>
+                <span class="msg-role">empleado · Admin Bayamón</span>
+              </div>
+              <div><span class="msg-when">14:32 · hace 9m</span><span class="msg-tag public">vía Portal</span></div>
+            </div>
+            <div class="msg-body">
+              <p>Desde esta mañana la impresora de la oficina de Administración (HP LaserJet del lado de los archivos) no responde cuando le mandamos a imprimir desde Salesforce. La luz amarilla está parpadeando.</p>
+              <p>Reinicié la computadora y la impresora una vez y volvió a hacer lo mismo. Tengo facturas atrasadas para entregar al despacho de las 3pm.</p>
+            </div>
+            <div class="msg-attach">
+              <div class="at">📎 IMG_4521.jpg · 1.2MB</div>
+              <div class="at">📎 error_salesforce.png · 340KB</div>
+            </div>
+          </div>
+
+          <div class="msg note">
+            <div class="msg-h">
+              <div class="msg-who">
+                <div class="av">JM</div>
+                <span class="msg-name">J. Marrero</span>
+                <span class="msg-role">UCG IT · turno tarde</span>
+              </div>
+              <div><span class="msg-when">14:33</span><span class="msg-tag internal">nota interna</span></div>
+            </div>
+            <div class="msg-body">
+              <p>Cola de impresión de HP-LJ-204 confirmada llena con 47 trabajos atascados desde 09:14 AM. Probablemente es el mismo issue que tuvimos con HP-LJ-201 la semana pasada (KB-029). Voy a limpiar la cola por SSH al print server.</p>
+            </div>
+          </div>
+
+          <div class="msg it">
+            <div class="msg-h">
+              <div class="msg-who">
+                <div class="av">JM</div>
+                <span class="msg-name">J. Marrero</span>
+                <span class="msg-role">UCG IT</span>
+              </div>
+              <div><span class="msg-when">14:34</span><span class="msg-tag public">para M. Ríos</span></div>
+            </div>
+            <div class="msg-body">
+              <p>Hola Marisol, recibido. La impresora tiene la cola atascada — pasa a veces cuando Salesforce manda muchos trabajos seguidos. Voy a limpiarla ahora mismo, debería tomar 5 minutos.</p>
+              <p>Mientras tanto, si necesitas urgente las facturas de las 3pm, prueba imprimir a la <b>HP-LJ-205</b> (la del pasillo) — ya la dejé en tu lista. Te aviso aquí cuando esté lista.</p>
+            </div>
+          </div>
+
+          <div class="msg emp">
+            <div class="msg-h">
+              <div class="msg-who">
+                <div class="av">MR</div>
+                <span class="msg-name">Marisol Ríos</span>
+                <span class="msg-role">empleado</span>
+              </div>
+              <div><span class="msg-when">14:41 · hace 1m</span><span class="msg-tag public">vía Portal</span></div>
+            </div>
+            <div class="msg-body">
+              <p>Sí, ya salió la primera factura. Gracias!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Composer -->
+        <div class="composer">
+          <div class="modes">
+            <button class="mode on">Mensaje a M. Ríos</button>
+            <button class="mode note">Nota interna</button>
+            <button class="mode">Plantilla KB</button>
+            <button class="mode">Adjuntar</button>
+            <button class="mode">@ Mencionar técnico</button>
+          </div>
+          <textarea placeholder="Tu mensaje llega al empleado por correo y por el Portal."></textarea>
+          <div class="actions">
+            <span class="left">Enter envía · Shift+Enter inserta línea</span>
+            <button class="btn">Marcar Resuelto</button>
+            <button class="btn primary">Enviar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- === SOLUCIÓN === -->
+      <div id="pane-sol" class="pane">
+        <div class="panel">
+          <div class="panel-h"><h4>Diagnóstico</h4><div class="meta">qué encontró el técnico</div></div>
+          <div class="panel-b">
+            <div class="sol-grid">
+              <div>
+                <label class="fl">Causa raíz</label>
+                <select>
+                  <option>Cola de impresión atascada</option>
+                  <option>Driver desactualizado</option>
+                  <option>Falla de hardware</option>
+                  <option>Problema de red</option>
+                  <option>Configuración incorrecta</option>
+                </select>
+              </div>
+              <div>
+                <label class="fl">Categoría de resolución</label>
+                <select>
+                  <option>Reset / Limpieza</option>
+                  <option>Reemplazo de equipo</option>
+                  <option>Configuración</option>
+                  <option>Capacitación al usuario</option>
+                  <option>Escalado a vendor</option>
+                </select>
+              </div>
+              <div class="sol-full">
+                <label class="fl">Hallazgos del técnico</label>
+                <textarea>Cola de impresión de HP-LJ-204 con 47 trabajos atascados desde 09:14 AM. Salesforce envió un batch de facturas y la impresora no respondió al primero (network timeout); el resto se acumuló. La impresora estaba físicamente OK — solo necesitaba reiniciar el spooler.</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h4>Pasos ejecutados</h4><div class="meta">5 pasos · 4 completados</div></div>
+          <div class="panel-b" style="padding: 0 16px;">
+            <div class="step-list">
+              <div class="step-row done">
+                <div class="step-num">✓</div>
+                <div class="step-text">SSH al print server <code>ps-byn-01</code> y verificar cola de HP-LJ-204</div>
+                <div class="step-meta">14:36 · 2m</div>
+              </div>
+              <div class="step-row done">
+                <div class="step-num">✓</div>
+                <div class="step-text">Detener servicio <code>cups</code>, limpiar <code>/var/spool/cups/*</code> de HP-LJ-204</div>
+                <div class="step-meta">14:38 · 1m</div>
+              </div>
+              <div class="step-row done">
+                <div class="step-num">✓</div>
+                <div class="step-text">Reiniciar <code>cups</code>, verificar que la cola está vacía</div>
+                <div class="step-meta">14:39 · 1m</div>
+              </div>
+              <div class="step-row done">
+                <div class="step-num">✓</div>
+                <div class="step-text">Pedir a M. Ríos que imprima una página de prueba desde Salesforce</div>
+                <div class="step-meta">14:40 · 1m</div>
+              </div>
+              <div class="step-row">
+                <div class="step-num">5</div>
+                <div class="step-text">Confirmar resolución con el empleado y cerrar ticket</div>
+                <div class="step-meta">en curso</div>
+              </div>
+            </div>
+            <div class="step-add">
+              <input type="text" placeholder="Agregar paso siguiente…" />
+              <button class="btn sm">+ Agregar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h4>Verificación con el empleado</h4><div class="meta">requerido para cerrar</div></div>
+          <div class="panel-b">
+            <div class="verify">
+              <div class="ic">✓</div>
+              <div>
+                <div class="t">M. Ríos confirmó que imprime correctamente</div>
+                <div class="s">14:41 — "Sí, ya salió la primera factura. Gracias!" — vía Portal del Empleado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-h"><h4>Cierre y aprendizaje</h4><div class="meta">se guarda al cerrar</div></div>
+          <div class="panel-b">
+            <div class="sol-grid">
+              <div>
+                <label class="fl">Tiempo total invertido</label>
+                <input type="text" value="14 min" />
+              </div>
+              <div>
+                <label class="fl">Aplicar a Base de Conocimiento</label>
+                <select>
+                  <option>KB-029 · Limpiar cola Salesforce (actualizar)</option>
+                  <option>Crear nuevo artículo KB</option>
+                  <option>No agregar a KB</option>
+                </select>
+              </div>
+              <div class="sol-full">
+                <label class="fl">Resumen para el empleado (se envía al cerrar)</label>
+                <textarea>La impresora HP-LJ-204 tenía la cola atascada por un envío grande desde Salesforce. Limpiamos la cola en el servidor y reanudamos el servicio. Si vuelve a pasar, no es necesario que reinicies todo — escríbenos y limpiamos la cola en 2 minutos.</textarea>
+              </div>
+              <div class="sol-full">
+                <label class="fl">Acción preventiva</label>
+                <textarea>Crear monitoreo de tamaño de cola en print servers (alerta a UCG si una cola pasa de 20 trabajos). Asignado a R. Quiles · ticket interno IT-PRV-014.</textarea>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end;">
+              <button class="btn">Guardar borrador</button>
+              <button class="btn primary">Cerrar como Resuelto</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === BITÁCORA === -->
+      <div id="pane-log" class="pane">
+        <div class="panel" style="margin: 0;">
+          <div class="log-filter">
+            <span class="lbl">Filtrar:</span>
+            <button class="chip on" style="font-size: 11px; padding: 4px 10px;">Todos <span style="font-family: var(--font-mono); opacity: 0.7;">9</span></button>
+            <button class="chip" style="font-size: 11px; padding: 4px 10px;">Mensajes <span style="font-family: var(--font-mono); opacity: 0.7;">3</span></button>
+            <button class="chip" style="font-size: 11px; padding: 4px 10px;">Estados <span style="font-family: var(--font-mono); opacity: 0.7;">2</span></button>
+            <button class="chip" style="font-size: 11px; padding: 4px 10px;">Asignación <span style="font-family: var(--font-mono); opacity: 0.7;">2</span></button>
+            <button class="chip" style="font-size: 11px; padding: 4px 10px;">Sistema <span style="font-family: var(--font-mono); opacity: 0.7;">2</span></button>
+            <span style="margin-left: auto; color: var(--ink-4); cursor: pointer;">Exportar log →</span>
+          </div>
+          <table class="log-tbl">
+            <thead>
+              <tr>
+                <th style="width: 110px;">Hora</th>
+                <th style="width: 100px;">Evento</th>
+                <th style="width: 200px;">Actor</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="ts">14:41:08</td>
+                <td><span class="ev ev-resolve">Verificado</span></td>
+                <td class="actor"><div class="n">M. Ríos</div><div class="r">empleado · EMP-2104</div></td>
+                <td class="det-d">Confirmó resolución vía Portal del Empleado: <code>"Sí, ya salió la primera factura. Gracias!"</code></td>
+              </tr>
+              <tr>
+                <td class="ts">14:39:22</td>
+                <td><span class="ev ev-message">Mensaje</span></td>
+                <td class="actor"><div class="n">J. Marrero</div><div class="r">UCG IT</div></td>
+                <td class="det-d">Mensaje al empleado: pidió prueba de impresión y confirmó que la cola está vacía.</td>
+              </tr>
+              <tr>
+                <td class="ts">14:39:01</td>
+                <td><span class="ev ev-status">Estado</span></td>
+                <td class="actor system"><div class="n">sistema</div></td>
+                <td class="det-d">Estado cambió de <code>Recibido</code> → <code>En progreso</code> tras primera respuesta del técnico.</td>
+              </tr>
+              <tr>
+                <td class="ts">14:34:11</td>
+                <td><span class="ev ev-message">Mensaje</span></td>
+                <td class="actor"><div class="n">J. Marrero</div><div class="r">UCG IT</div></td>
+                <td class="det-d">Primera respuesta al empleado · ofreció HP-LJ-205 como respaldo · TTR <code>1m 49s</code>.</td>
+              </tr>
+              <tr>
+                <td class="ts">14:33:42</td>
+                <td><span class="ev ev-note">Nota</span></td>
+                <td class="actor"><div class="n">J. Marrero</div><div class="r">UCG IT</div></td>
+                <td class="det-d">Nota interna · cola con 47 trabajos atascados · referencia <code>KB-029</code>.</td>
+              </tr>
+              <tr>
+                <td class="ts">14:33:00</td>
+                <td><span class="ev ev-assign">Asignado</span></td>
+                <td class="actor"><div class="n">J. Marrero</div><div class="r">UCG IT</div></td>
+                <td class="det-d">Toma manual desde la cola · "Mis tickets" → +1.</td>
+              </tr>
+              <tr>
+                <td class="ts">14:32:14</td>
+                <td><span class="ev ev-sla">SLA</span></td>
+                <td class="actor system"><div class="n">sistema</div></td>
+                <td class="det-d">SLA Alta aplicado · vence <code>18:32 AST</code> · auto-asignado al turno tarde por reglas de cola.</td>
+              </tr>
+              <tr>
+                <td class="ts">14:32:05</td>
+                <td><span class="ev ev-assign">Vinculado</span></td>
+                <td class="actor system"><div class="n">sistema</div></td>
+                <td class="det-d">Activo <code>HP-LJ-204</code> vinculado al ticket por mención en descripción.</td>
+              </tr>
+              <tr>
+                <td class="ts">14:32:00</td>
+                <td><span class="ev ev-create">Creado</span></td>
+                <td class="actor"><div class="n">M. Ríos</div><div class="r">empleado · EMP-2104</div></td>
+                <td class="det-d">Ticket creado vía Portal del Empleado · categoría <code>Hardware</code> · prioridad inicial <code>Alta</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- === ACTIVO === -->
+      <div id="pane-act" class="pane">
+        <div class="panel">
+          <div class="panel-h"><h4>Activo afectado</h4><div class="meta">vinculado al ticket</div></div>
+          <div class="panel-b">
+            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 18px; align-items: start;">
+              <div style="width: 80px; height: 80px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🖨</div>
+              <div>
+                <div style="font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">HP LaserJet Pro M404dn · HP-LJ-204</div>
+                <div style="font-size: 12px; color: var(--ink-4); margin-bottom: 14px;">Tag de inventario <b style="color: var(--ink-2); font-family: var(--font-mono);">TG-PR-IMP-204</b> · sucursal Bayamón · oficina Administración</div>
+                <div class="sol-grid">
+                  <div class="kv"><div class="k">Fabricante</div><div class="v">HP Inc.</div></div>
+                  <div class="kv"><div class="k">Modelo</div><div class="v mono">M404dn</div></div>
+                  <div class="kv"><div class="k">Serial</div><div class="v mono">CN8K2YQ4XZ</div></div>
+                  <div class="kv"><div class="k">IP</div><div class="v mono">10.40.18.204</div></div>
+                  <div class="kv"><div class="k">Garantía</div><div class="v">vence 18 oct 2026</div></div>
+                  <div class="kv"><div class="k">Print server</div><div class="v mono">ps-byn-01</div></div>
+                  <div class="kv"><div class="k">Tickets · 90d</div><div class="v">3 · 2 resueltos, 1 abierto</div></div>
+                  <div class="kv"><div class="k">Última falla</div><div class="v">29 abr · cola atascada (resuelto)</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === RELACIONADOS === -->
+      <div id="pane-rel" class="pane">
+        <div class="panel">
+          <div class="panel-h"><h4>Tickets relacionados</h4><div class="meta">misma categoría · mismo activo</div></div>
+          <div class="panel-b" style="padding: 0;">
+            <table class="log-tbl">
+              <thead><tr><th>ID</th><th>Resumen</th><th>Empleado</th><th>Resuelto</th><th>Vinculación</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td class="ts" style="font-weight: 700; color: var(--ink);">SM-00029</td>
+                  <td>Reset de contraseña · EMAS</td>
+                  <td>M. Ríos · Bayamón</td>
+                  <td>29 abr · 12 min</td>
+                  <td><span style="font-size: 10px; padding: 2px 6px; background: #DBEAFE; color: #1E40AF; border-radius: 2px; font-weight: 700; letter-spacing: 0.06em;">MISMO EMPLEADO</span></td>
+                </tr>
+                <tr>
+                  <td class="ts" style="font-weight: 700; color: var(--ink);">SM-00021</td>
+                  <td>Impresora HP-LJ-201 · cola atascada Salesforce</td>
+                  <td>L. Vega · Bayamón</td>
+                  <td>26 abr · 18 min</td>
+                  <td><span style="font-size: 10px; padding: 2px 6px; background: #FCE7F3; color: #9F1239; border-radius: 2px; font-weight: 700; letter-spacing: 0.06em;">MISMO PATRÓN</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT RAIL -->
+    <aside class="col-rail">
+      <div class="rail-block">
+        <div class="rail-h"><h4>SLA</h4><div class="ed">tiempo restante</div></div>
+        <div class="rail-b">
+          <div class="sla-rail">
+            <div class="nums"><div class="left">3h 51m</div><div class="right">/ 4h Alta</div></div>
+            <div class="track"><div class="fill" style="width: 4%; background: var(--st-done);"></div></div>
+            <div class="lbl">Vence 18:32 AST · cumpliendo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rail-block">
+        <div class="rail-h"><h4>Asignado</h4><div class="ed">Reasignar</div></div>
+        <div class="rail-b">
+          <div class="assignee-row">
+            <div class="assignee-init">JM</div>
+            <div><div class="assignee-name">J. Marrero</div><div class="assignee-role">UCG · Mesa de Ayuda IT</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rail-block">
+        <div class="rail-h"><h4>Empleado</h4><div class="ed">Ver perfil</div></div>
+        <div class="rail-b">
+          <div class="kv"><div class="k">Nombre</div><div class="v">M. Ríos</div></div>
+          <div class="kv"><div class="k">ID empleado</div><div class="v mono">EMP-2104</div></div>
+          <div class="kv"><div class="k">Departamento</div><div class="v">Administración</div></div>
+          <div class="kv"><div class="k">Sucursal</div><div class="v">Bayamón · Oficina Central</div></div>
+          <div class="kv"><div class="k">Ext.</div><div class="v mono">x4521</div></div>
+          <div class="kv"><div class="k">Tickets · 90d</div><div class="v">5 · 4 resueltos</div></div>
+        </div>
+      </div>
+
+      <div class="rail-block">
+        <div class="rail-h"><h4>Base de conocimiento</h4></div>
+        <div class="rail-b">
+          <div style="font-size: 12px;">
+            <div style="padding: 8px; background: var(--paper-2); border-radius: 3px; margin-bottom: 6px;">
+              <div style="font-weight: 600; color: var(--ink); margin-bottom: 2px;">KB-029 · Cola Salesforce atascada</div>
+              <div style="color: var(--ink-4); font-size: 11px;">94% relevancia · usado 12 veces</div>
+            </div>
+            <div style="padding: 8px; background: var(--paper-2); border-radius: 3px;">
+              <div style="font-weight: 600; color: var(--ink); margin-bottom: 2px;">KB-014 · Reiniciar print server</div>
+              <div style="color: var(--ink-4); font-size: 11px;">81% relevancia · usado 8 veces</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rail-block">
+        <div class="rail-h"><h4>Etiquetas</h4></div>
+        <div class="rail-b">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <span class="chip" style="font-size: 10px; padding: 3px 8px;">salesforce</span>
+            <span class="chip" style="font-size: 10px; padding: 3px 8px;">cola-impresion</span>
+            <span class="chip" style="font-size: 10px; padding: 3px 8px;">recurrente</span>
+            <span class="chip" style="font-size: 10px; padding: 3px 8px; color: var(--tg-red); border-color: var(--tg-red);">+ Agregar</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="foot">
+    <span class="live"><b>CONECTADO</b></span>
+    <span><b>BASE</b> tropigas_pr_v3</span>
+    <span><b>USR</b> j.marrero · UCG IT</span>
+    <span><b>TICKET</b> SM-00043 · EMP-2104 · HP-LJ-204</span>
+    <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+  </div>
+</div>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  document.getElementById('pane-' + id).classList.add('on');
+  document.querySelectorAll('.det-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+</script>
+
+</body>
+</html>

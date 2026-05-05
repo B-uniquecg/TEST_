@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>Tropigas · Mesa de Ayuda IT — Empleado + UCG</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100vh; overflow: hidden; background: var(--paper-2); color: var(--ink); font-family: var(--font-ui); font-size: 14px; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--paper-2); }
+  ::-webkit-scrollbar-thumb { background: var(--ink-5); border-radius: 4px; }
+
+  /* Persona switcher */
+  .persona-bar {
+    position: fixed; top: 12px; right: 12px; z-index: 100;
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 4px; box-shadow: var(--shadow-2);
+    display: flex; align-items: stretch; overflow: hidden;
+  }
+  .persona-bar .lbl {
+    padding: 8px 10px; font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-4); background: var(--paper-2);
+    border-right: 1px solid var(--line);
+    display: flex; align-items: center;
+  }
+  .persona-bar button {
+    padding: 8px 14px; font-size: 12px; font-weight: 500;
+    color: var(--ink-3);
+    border-right: 1px solid var(--line-soft);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .persona-bar button:last-child { border-right: none; }
+  .persona-bar button:hover { background: var(--paper-2); color: var(--ink); }
+  .persona-bar button.on { background: var(--tg-navy); color: var(--paper); }
+  .persona-bar button .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-5); }
+  .persona-bar button.on .dot { background: #4ADE80; }
+
+  .screen { display: none; height: 100vh; overflow: hidden; }
+  .screen.on { display: block; }
+
+  /* Shared brand chrome */
+  .top-bar {
+    background: var(--tg-navy); color: var(--paper);
+    border-bottom: 4px solid var(--tg-red);
+    display: flex; align-items: stretch; height: 56px;
+  }
+  .brand {
+    padding: 0 20px; display: flex; align-items: center;
+    background: rgba(0,0,0,0.20); min-width: 240px;
+  }
+  .brand-mark { width: 30px; height: 30px; background: var(--tg-red); color: var(--paper); border: 2px solid var(--paper); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; margin-right: 12px; }
+  .brand-name { font-weight: 800; font-size: 14px; letter-spacing: 0.02em; }
+  .pr-flag { display: inline-block; width: 14px; height: 10px; background: linear-gradient(to bottom, #E30512 0% 20%, white 20% 40%, #E30512 40% 60%, white 60% 80%, #E30512 80% 100%); position: relative; margin-left: 6px; vertical-align: middle; }
+  .pr-flag::before { content: ''; position: absolute; left: 0; top: 0; width: 0; height: 0; border-left: 6px solid var(--tg-navy); border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+  .brand-sub { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-top: 2px; font-weight: 500; }
+  .top-meta { display: flex; }
+  .top-meta-cell { padding: 8px 18px; border-right: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; justify-content: center; }
+  .top-meta-k { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 2px; font-weight: 600; }
+  .top-meta-v { font-size: 12px; font-weight: 600; }
+  .top-meta-v.live::before { content:''; display:inline-block; width:7px; height:7px; background:#4ADE80; border-radius:50%; margin-right:6px; vertical-align:middle; animation: blink 1.6s infinite; }
+  @keyframes blink { 50% { opacity: 0.4; } }
+  .top-spacer { flex: 1; }
+  .top-user { display: flex; align-items: center; gap: 10px; padding: 0 16px; border-left: 1px solid rgba(255,255,255,0.10); }
+  .top-user-init { width: 26px; height: 26px; background: var(--paper); color: var(--tg-navy); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .top-user-name { font-size: 12px; font-weight: 600; line-height: 1.1; }
+  .top-user-role { font-size: 10px; color: rgba(255,255,255,0.55); }
+
+  .foot {
+    background: var(--tg-navy); color: rgba(255,255,255,0.7);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em;
+    display: flex; align-items: center; padding: 0 16px; gap: 18px;
+    height: 22px;
+  }
+  .foot b { color: var(--paper); font-weight: 600; }
+  .foot .live::before { content:''; display:inline-block; width:6px; height:6px; background:#4ADE80; border-radius:50%; margin-right:6px; animation:blink 1.6s infinite; }
+  .foot .right { margin-left: auto; }
+
+  /* Buttons */
+  .btn {
+    font-family: var(--font-ui);
+    font-size: 13px; font-weight: 500;
+    padding: 7px 14px; border-radius: 3px;
+    border: 1px solid #C9CDD3; background: var(--paper);
+    color: var(--ink-2);
+  }
+  .btn:hover { background: var(--paper-2); }
+  .btn.primary { background: var(--tg-navy); border-color: var(--tg-navy); color: var(--paper); }
+  .btn.primary:hover { background: #16264C; }
+
+  /* Form primitives */
+  label.fl { font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 5px; display: block; }
+  label.fl .req { color: var(--tg-red); }
+  input[type=text], input[type=tel], select, textarea {
+    width: 100%; background: var(--paper);
+    border: 1px solid #C9CDD3; border-radius: 3px;
+    padding: 7px 10px; font-size: 13px; color: var(--ink);
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--tg-navy);
+    box-shadow: 0 0 0 2px rgba(28, 47, 92, 0.18);
+  }
+  textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+  select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0Z' fill='%236B7280'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  /* ============================================================ */
+  /*  SCREEN 1 — EMPLOYEE PORTAL  (Self-service IT request)         */
+  /* ============================================================ */
+  .emp-app { display: grid; grid-template-rows: 56px 1fr 22px; height: 100vh; }
+  .emp-body { background: var(--paper-2); overflow-y: auto; }
+
+  .emp-hero {
+    background: linear-gradient(135deg, var(--tg-navy) 0%, #16264C 100%);
+    color: var(--paper);
+    padding: 28px 40px 60px;
+    position: relative;
+  }
+  .emp-hero::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 30px; background: var(--paper-2);
+    clip-path: polygon(0 100%, 100% 100%, 100% 0);
+  }
+  .emp-hero .crumb {
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.55); font-weight: 600; margin-bottom: 12px;
+  }
+  .emp-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 800; font-size: 32px; line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--paper);
+  }
+  .emp-hero p {
+    font-size: 14px; color: rgba(255,255,255,0.7);
+    max-width: 620px; margin-top: 8px; line-height: 1.5;
+  }
+
+  .emp-wrap {
+    max-width: 1200px; margin: -34px auto 32px;
+    padding: 0 32px; position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1fr 320px; gap: 24px;
+    align-items: start;
+  }
+
+  .emp-form {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--shadow-2);
+    overflow: hidden;
+  }
+  .emp-form-h {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .emp-form-h h2 { font-size: 16px; font-weight: 600; color: var(--ink); }
+  .emp-form-h .step {
+    font-size: 11px; color: var(--ink-4);
+    font-family: var(--font-mono); letter-spacing: 0.06em;
+  }
+
+  .emp-section {
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .emp-section:last-child { border-bottom: none; }
+  .emp-section .h {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .emp-section .h .num {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    color: var(--tg-red); letter-spacing: 0.06em;
+  }
+  .emp-section .h .t {
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .emp-section .h .sub {
+    font-size: 12px; color: var(--ink-4); margin-left: auto;
+  }
+
+  .emp-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px 18px; }
+  .emp-fld.s4 { grid-column: span 4; }
+  .emp-fld.s6 { grid-column: span 6; }
+  .emp-fld.s12 { grid-column: span 12; }
+
+  /* Category picker — visual cards (employee-friendly) */
+  .cat-pick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .cat-pick label {
+    padding: 14px 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+    background: var(--paper);
+    text-align: left;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: all 0.12s;
+  }
+  .cat-pick input { display: none; }
+  .cat-pick label:hover { border-color: var(--ink-4); background: var(--paper-2); }
+  .cat-pick label.sel { border: 2px solid var(--tg-navy); padding: 13px 11px; background: #F8FAFD; }
+  .cat-pick .ic {
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    color: var(--tg-red); letter-spacing: 0.10em;
+  }
+  .cat-pick .name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .cat-pick .desc { font-size: 11px; color: var(--ink-4); line-height: 1.4; }
+
+  /* Importance pick — same as before but employee-flavored */
+  .imp-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .imp-pick label {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid var(--line); border-radius: 3px;
+    cursor: pointer; background: var(--paper);
+  }
+  .imp-pick input { display: none; }
+  .imp-pick label .name { font-size: 13px; font-weight: 600; color: var(--ink); display: flex; justify-content: space-between; align-items: center; }
+  .imp-pick label .desc { font-size: 11px; color: var(--ink-4); line-height: 1.4; }
+  .imp-pick label .tag { font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; }
+  .imp-pick label.alta .tag { background: var(--imp-alta-bg); color: var(--imp-alta-fg); }
+  .imp-pick label.media .tag { background: var(--imp-media-bg); color: var(--imp-media-fg); }
+  .imp-pick label.baja .tag { background: var(--imp-baja-bg); color: var(--imp-baja-fg); }
+  .imp-pick label.sel { border: 2px solid var(--tg-navy); padding: 11px 13px; background: #F8FAFD; }
+
+  .help { font-size: 11px; color: var(--ink-4); margin-top: 4px; }
+
+  /* Read-only auto-filled fields */
+  .ro {
+    padding: 7px 10px; background: var(--paper-2);
+    border: 1px solid #DADDE2; border-radius: 3px;
+    font-size: 13px; color: var(--ink-2); min-height: 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ro .tag { font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; background: var(--paper-3); color: var(--ink-4); padding: 2px 6px; border-radius: 2px; }
+
+  /* Attach */
+  .attach-zone {
+    border: 1.5px dashed #C9CDD3; border-radius: 4px;
+    padding: 18px; text-align: center;
+    background: var(--paper-2); cursor: pointer;
+  }
+  .attach-zone:hover { border-color: var(--tg-navy); background: #F8FAFD; }
+  .attach-zone .t { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .attach-zone .s { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
+
+  .emp-foot-actions {
+    padding: 18px 24px;
+    background: var(--paper-2);
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .emp-foot-actions .info {
+    font-size: 12px; color: var(--ink-4);
+  }
+  .emp-foot-actions .info b { color: var(--ink-2); }
+
+  /* Right rail — employee context + tips + previous tickets */
+  .emp-rail { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 16px; }
+  .rail-card {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 4px; box-shadow: var(--shadow-1);
+    overflow: hidden;
+  }
+  .rail-card-h {
+    padding: 11px 14px; border-bottom: 1px solid var(--line);
+    background: var(--paper-2);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .rail-card-h h4 { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--tg-navy); }
+  .rail-card-h .ed { font-size: 11px; color: var(--ink-4); cursor: pointer; }
+  .rail-card-h .ed:hover { color: var(--tg-navy); text-decoration: underline; }
+  .rail-card-b { padding: 14px; }
+
+  .me-row { display: flex; gap: 12px; align-items: center; }
+  .me-init { width: 40px; height: 40px; background: var(--tg-navy); color: var(--paper); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
+  .me-name { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .me-role { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
+
+  .kv-rail { display: grid; grid-template-columns: 90px 1fr; gap: 8px; font-size: 12px; margin-top: 12px; }
+  .kv-rail .k { color: var(--ink-4); }
+  .kv-rail .v { color: var(--ink); font-weight: 500; }
+  .kv-rail .v.mono { font-family: var(--font-mono); font-weight: 600; }
+
+  .tip-list { display: flex; flex-direction: column; gap: 10px; font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+  .tip-list li { list-style: none; padding-left: 18px; position: relative; }
+  .tip-list li::before {
+    content: '→'; position: absolute; left: 0; top: 0;
+    color: var(--tg-red); font-weight: 700; font-family: var(--font-mono);
+  }
+
+  .my-tickets-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 0; border-bottom: 1px solid var(--line-soft);
+    font-size: 12px;
+  }
+  .my-tickets-row:last-child { border-bottom: none; }
+  .my-tickets-row .id { font-family: var(--font-mono); font-weight: 700; color: var(--ink); font-size: 11px; }
+  .my-tickets-row .desc { color: var(--ink-2); flex: 1; margin: 0 10px; }
+  .my-tickets-row .stat-mini { font-size: 9px; padding: 2px 5px; border-radius: 2px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* Success banner shown after submit */
+  .save-banner {
+    display: none;
+    padding: 14px 18px; background: #ECFDF5;
+    border: 1px solid #A7F3D0; border-left: 3px solid var(--st-done);
+    border-radius: 3px;
+    font-size: 13px; color: #065F46;
+    align-items: center; gap: 14px; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .save-banner.on { display: flex; }
+  .save-banner b { color: var(--ink); }
+  .save-banner .id-chip {
+    background: var(--tg-navy); color: var(--paper);
+    padding: 3px 8px; border-radius: 3px;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  }
+  .save-banner button {
+    font-size: 11px; color: #065F46; font-weight: 600;
+    padding: 4px 10px; border: 1px solid #A7F3D0; border-radius: 3px;
+    background: var(--paper);
+  }
+
+  /* ============================================================ */
+  /*  SCREEN 2 — IT RESPONDER  (UCG · L2 console + ticket detail) */
+  /* ============================================================ */
+  .it-app { display: grid; grid-template-rows: 56px auto 1fr 22px; height: 100vh; }
+
+  .it-tabs {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: stretch;
+  }
+  .it-tab {
+    padding: 0 22px; height: 38px;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-3);
+    border-right: 1px solid var(--line-soft);
+    position: relative;
+  }
+  .it-tab:hover { background: var(--paper-2); color: var(--ink); }
+  .it-tab.on { background: var(--tg-navy); color: var(--paper); }
+  .it-tab.on::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:3px; background: var(--tg-red); }
+  .tab-num { color: var(--tg-red); font-weight: 700; font-size: 10px; }
+  .it-tab.on .tab-num { color: #FCA5A5; }
+  .tab-c { background: var(--paper-2); color: var(--ink-3); padding: 2px 7px; font-size: 10px; font-weight: 700; border-radius: 12px; font-family: var(--font-mono); }
+  .it-tab.on .tab-c { background: var(--tg-red); color: var(--paper); }
+  .it-tabs-spacer { flex: 1; }
+  .it-tabs-meta { padding: 0 18px; height: 38px; display: inline-flex; align-items: center; font-size: 11px; color: var(--ink-4); border-left: 1px solid var(--line); gap: 14px; }
+  .it-tabs-meta .pip { color: var(--ink-2); font-weight: 600; font-family: var(--font-mono); }
+
+  .it-main { display: grid; grid-template-columns: 360px 1fr; overflow: hidden; }
+
+  .it-queue { background: var(--paper); border-right: 1px solid var(--line); overflow-y: auto; }
+  .queue-h {
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--paper-2);
+  }
+  .queue-h .t { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-3); }
+  .queue-h .c { font-family: var(--font-mono); font-size: 11px; color: var(--ink); font-weight: 600; }
+
+  .queue-filter {
+    display: flex; padding: 8px 12px; gap: 6px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .queue-filter button {
+    font-size: 11px; font-weight: 500;
+    padding: 5px 10px; border-radius: 12px;
+    color: var(--ink-3); border: 1px solid var(--line);
+    background: var(--paper);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .queue-filter button:hover { background: var(--paper-2); }
+  .queue-filter button.on { background: var(--tg-navy); color: var(--paper); border-color: var(--tg-navy); }
+  .queue-filter button .n { font-family: var(--font-mono); font-size: 10px; opacity: 0.7; }
+
+  .q-row {
+    padding: 12px 16px; border-bottom: 1px solid var(--line-soft);
+    cursor: pointer; position: relative;
+  }
+  .q-row:hover { background: var(--paper-2); }
+  .q-row.sel { background: #F8FAFD; }
+  .q-row.sel::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--tg-red); }
+  .q-row-1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .q-row-id { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--ink); }
+  .q-row-id .sf { color: var(--ink-4); font-weight: 400; margin-left: 8px; font-size: 11px; }
+  .q-row-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); }
+  .q-row-time.urg { color: var(--tg-red); font-weight: 600; }
+  .q-row-2 { font-size: 13px; color: var(--ink); font-weight: 500; margin-bottom: 4px; }
+  .q-row-3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--ink-4); }
+  .q-row-3 .imp { font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; }
+  .imp-Alta { background: var(--imp-alta-bg); color: var(--imp-alta-fg); }
+  .imp-Media { background: var(--imp-media-bg); color: var(--imp-media-fg); }
+  .imp-Baja { background: var(--imp-baja-bg); color: var(--imp-baja-fg); }
+  .q-row-3 .stat { font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; padding: 2px 6px; border: 1px solid currentColor; border-radius: 2px; display: inline-flex; align-items: center; gap: 5px; }
+  .q-row-3 .stat::before { content:''; width:5px; height:5px; background: currentColor; border-radius: 50%; }
+  .stat-Recibido { color: var(--st-new); }
+  .stat-Progreso { color: var(--st-prog); }
+  .stat-Resuelto { color: var(--st-done); }
+  .stat-Cerrado { color: var(--st-closed); }
+
+  .it-detail { overflow-y: auto; background: var(--paper-2); }
+  .it-d-banner { background: var(--paper); border-bottom: 1px solid var(--line); padding: 18px 28px; }
+  .it-d-1 { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 8px; }
+  .it-d-id-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .it-d-id { font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: var(--paper); background: var(--tg-navy); padding: 4px 10px; border-radius: 3px; letter-spacing: 0.06em; }
+  .it-d-sf { font-family: var(--font-mono); font-size: 12px; color: var(--ink-4); }
+  .it-d-sf b { color: var(--ink-2); }
+  .it-d-h1 { font-size: 22px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+  .it-d-sub { font-size: 12px; color: var(--ink-4); margin-top: 6px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .it-d-sub b { color: var(--ink-2); font-weight: 500; }
+  .it-d-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .it-d-tabs { display: flex; gap: 4px; margin-top: 14px; border-bottom: 1px solid var(--line); margin-left: -28px; margin-right: -28px; padding: 0 28px; }
+  .it-d-tab {
+    padding: 10px 16px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4);
+    border-bottom: 3px solid transparent; margin-bottom: -1px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .it-d-tab:hover { color: var(--ink-2); }
+  .it-d-tab.on { color: var(--tg-navy); border-bottom-color: var(--tg-red); }
+  .it-d-tab .n { color: var(--tg-red); font-size: 10px; }
+  .it-d-tab .c { background: var(--paper-3); color: var(--ink-3); padding: 2px 6px; border-radius: 10px; font-size: 10px; font-family: var(--font-mono); }
+
+  .it-d-body { display: grid; grid-template-columns: 1fr 320px; padding: 18px 28px; gap: 18px; align-items: start; }
+
+  .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow-1); margin-bottom: 14px; overflow: hidden; }
+  .panel-h { padding: 11px 16px; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--line); }
+  .panel-h h4 { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--tg-navy); margin: 0; }
+  .panel-h .meta { font-size: 11px; color: var(--ink-4); }
+  .panel-b { padding: 16px; }
+
+  .desc-block {
+    background: var(--paper-2); border-left: 3px solid var(--tg-red);
+    padding: 14px 16px; font-size: 14px; line-height: 1.55;
+    color: var(--ink-2); border-radius: 0 3px 3px 0;
+  }
+
+  .timeline { display: flex; flex-direction: column; }
+  .tl-row { display: grid; grid-template-columns: 32px 1fr; padding: 12px 0; border-bottom: 1px solid var(--line-soft); position: relative; }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tg-navy); margin: 4px 0 0 8px; position: relative; z-index: 1; }
+  .tl-row.cust .tl-dot { background: var(--ink-4); }
+  .tl-row.it .tl-dot { background: var(--tg-red); }
+  .tl-row.sys .tl-dot { background: var(--ink-5); width: 8px; height: 8px; margin-left: 9px; margin-top: 5px; }
+  .tl-line { position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background: var(--paper-3); z-index: 0; }
+  .tl-row:first-child .tl-line { top: 12px; }
+  .tl-row:last-child .tl-line { bottom: 50%; }
+  .tl-meta { font-size: 11px; color: var(--ink-4); margin-bottom: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .tl-meta b { color: var(--ink-2); font-weight: 600; }
+  .tl-meta .who.it { color: var(--tg-red); }
+  .tl-text { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+  .tl-text.sys { color: var(--ink-4); font-style: italic; font-size: 12px; font-family: var(--font-mono); }
+
+  .composer { padding: 16px; background: var(--paper); border-top: 1px solid var(--line); }
+  .composer .modes { display: flex; gap: 4px; margin-bottom: 8px; }
+  .composer .mode {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 10px; border: 1px solid var(--line);
+    border-radius: 3px; color: var(--ink-3); background: var(--paper);
+  }
+  .composer .mode.on { background: var(--tg-navy); color: var(--paper); border-color: var(--tg-navy); }
+  .composer textarea {
+    width: 100%; border: 1px solid #C9CDD3; border-radius: 3px;
+    padding: 10px 12px; font-size: 13px; resize: vertical; min-height: 80px;
+  }
+  .composer textarea:focus { outline: none; border-color: var(--tg-navy); box-shadow: 0 0 0 2px rgba(28, 47, 92, 0.18); }
+  .composer .actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .composer .actions .left { color: var(--ink-4); font-size: 11px; flex: 1; }
+
+  .rail-block { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; box-shadow: var(--shadow-1); margin-bottom: 14px; overflow: hidden; }
+  .rail-h { padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--paper-2); display: flex; justify-content: space-between; align-items: center; }
+  .rail-h h4 { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--tg-navy); margin: 0; }
+  .rail-h .ed { font-size: 11px; color: var(--ink-4); cursor: pointer; }
+  .rail-h .ed:hover { color: var(--tg-navy); text-decoration: underline; }
+  .rail-b { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .rail-b .kv-rail { display: grid; grid-template-columns: 90px 1fr; gap: 10px; font-size: 12px; }
+  .rail-b .kv-rail .k { color: var(--ink-4); }
+  .rail-b .kv-rail .v { color: var(--ink); font-weight: 500; }
+  .rail-b .kv-rail .v.mono { font-family: var(--font-mono); font-weight: 600; }
+
+  .sla-bar-rail { display: flex; flex-direction: column; gap: 6px; }
+  .sla-bar-rail .nums { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--font-mono); }
+  .sla-bar-rail .nums .left { font-size: 18px; font-weight: 700; color: var(--ink); }
+  .sla-bar-rail .nums .right { font-size: 11px; color: var(--ink-4); }
+  .sla-bar-rail .track { height: 6px; background: var(--paper-3); border-radius: 3px; overflow: hidden; }
+  .sla-bar-rail .fill { height: 100%; background: var(--st-prog); }
+  .sla-bar-rail .lbl { font-size: 11px; color: var(--ink-4); }
+
+  .assignee-row { display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--paper-2); border-radius: 3px; }
+  .assignee-init { width: 30px; height: 30px; background: var(--tg-red); color: var(--paper); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
+  .assignee-name { font-size: 13px; font-weight: 600; }
+  .assignee-role { font-size: 11px; color: var(--ink-4); }
+
+  .related-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 12px; }
+  .related-row:last-child { border-bottom: none; }
+  .related-row .id { font-family: var(--font-mono); font-weight: 600; color: var(--ink); }
+  .related-row .desc { color: var(--ink-3); flex: 1; margin: 0 10px; }
+  .related-row .stat-mini { font-size: 9px; padding: 2px 5px; border-radius: 2px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* Asset/equipment tag */
+  .asset-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 8px; background: var(--paper-2);
+    border: 1px solid var(--line); border-radius: 3px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink-2);
+  }
+  .asset-tag b { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- Persona switcher -->
+<div class="persona-bar">
+  <div class="lbl">Vista</div>
+  <button id="btn-emp" class="on" onclick="show('emp')"><span class="dot"></span>Empleado · Reportar a IT</button>
+  <button id="btn-it" onclick="show('it')"><span class="dot"></span>UCG · Mesa de Ayuda IT</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 1 — EMPLOYEE PORTAL (self-service) -->
+<!-- ============================================================ -->
+<div id="screen-emp" class="screen on">
+  <div class="emp-app">
+    <div class="top-bar">
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <div>
+          <div class="brand-name">TROPIGAS<span class="pr-flag"></span></div>
+          <div class="brand-sub">Portal del Empleado · IT</div>
+        </div>
+      </div>
+      <div class="top-meta">
+        <div class="top-meta-cell">
+          <div class="top-meta-k">Mesa de Ayuda</div>
+          <div class="top-meta-v live">disponible · resp. ~12 min</div>
+        </div>
+        <div class="top-meta-cell">
+          <div class="top-meta-k">Mis tickets abiertos</div>
+          <div class="top-meta-v">2</div>
+        </div>
+        <div class="top-meta-cell">
+          <div class="top-meta-k">Hora AST</div>
+          <div class="top-meta-v" style="font-family: var(--font-mono);">14:32</div>
+        </div>
+      </div>
+      <div class="top-spacer"></div>
+      <div class="top-user">
+        <div class="top-user-init">MR</div>
+        <div>
+          <div class="top-user-name">M. Ríos</div>
+          <div class="top-user-role">Administración · Bayamón</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="emp-body">
+      <div class="emp-hero">
+        <div class="crumb">Portal del Empleado / Mesa de Ayuda IT / Nuevo reporte</div>
+        <h1>Reportar un problema a IT.</h1>
+        <p>Cuéntanos qué no está funcionando en tu equipo, sistema o sucursal. Un técnico de UCG lo recibe en segundos y te responde por aquí o por correo. Para emergencias de seguridad operacional <b>llama a la planta</b>, no uses este portal.</p>
+      </div>
+
+      <div class="emp-wrap">
+        <!-- LEFT — form -->
+        <main>
+          <div id="save-banner" class="save-banner">
+            <span>Tu ticket fue enviado a <b>UCG · Mesa de Ayuda IT</b>. Recibirás actualizaciones por correo y aquí.</span>
+            <span class="id-chip" id="new-ticket-id">SM-00043</span>
+            <button onclick="show('it')">Ver cómo lo trabaja IT →</button>
+          </div>
+
+          <div class="emp-form">
+            <div class="emp-form-h">
+              <h2>Nuevo reporte</h2>
+              <div class="step">paso 1 de 1 · se guarda automáticamente</div>
+            </div>
+
+            <!-- Section 1 — quién y dónde (auto) -->
+            <div class="emp-section">
+              <div class="h">
+                <span class="num">[01]</span>
+                <span class="t">Sobre ti y tu sucursal</span>
+                <span class="sub">tomado de tu cuenta · edita si difiere</span>
+              </div>
+              <div class="emp-grid">
+                <div class="emp-fld s4">
+                  <label class="fl">Empleado</label>
+                  <div class="ro"><span>Marisol Ríos</span><span class="tag">SSO</span></div>
+                </div>
+                <div class="emp-fld s4">
+                  <label class="fl">Departamento</label>
+                  <div class="ro"><span>Administración</span><span class="tag">SSO</span></div>
+                </div>
+                <div class="emp-fld s4">
+                  <label class="fl">Sucursal / Planta</label>
+                  <select>
+                    <option>Bayamón — Oficina central</option>
+                    <option>Ponce — sucursal</option>
+                    <option>Mayagüez — sucursal</option>
+                    <option>Caguas — planta</option>
+                    <option>Arecibo — planta</option>
+                  </select>
+                </div>
+                <div class="emp-fld s4">
+                  <label class="fl">Extensión / Teléfono</label>
+                  <input type="tel" value="ext. 2104" />
+                </div>
+                <div class="emp-fld s4">
+                  <label class="fl">Correo de contacto</label>
+                  <input type="text" value="m.rios@tropigas.pr" />
+                </div>
+                <div class="emp-fld s4">
+                  <label class="fl">¿Mejor manera de contactarte? <span class="req">*</span></label>
+                  <select>
+                    <option>Correo</option>
+                    <option>Teams</option>
+                    <option>Llamada a la extensión</option>
+                    <option>WhatsApp</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 2 — categoría -->
+            <div class="emp-section">
+              <div class="h">
+                <span class="num">[02]</span>
+                <span class="t">¿Qué tipo de problema es? <span style="color: var(--tg-red);">*</span></span>
+              </div>
+              <div class="cat-pick">
+                <label class="sel">
+                  <input type="radio" name="cat" checked />
+                  <div class="ic">[01] HW</div>
+                  <div class="name">Computadora / Equipo</div>
+                  <div class="desc">Laptop, PC, monitor, impresora, teléfono</div>
+                </label>
+                <label>
+                  <input type="radio" name="cat" />
+                  <div class="ic">[02] APP</div>
+                  <div class="name">Sistema o aplicación</div>
+                  <div class="desc">Salesforce, EMAS, POS, correo, Teams</div>
+                </label>
+                <label>
+                  <input type="radio" name="cat" />
+                  <div class="ic">[03] NET</div>
+                  <div class="name">Red / Internet</div>
+                  <div class="desc">WiFi, conexión lenta, VPN, sucursal sin red</div>
+                </label>
+                <label>
+                  <input type="radio" name="cat" />
+                  <div class="ic">[04] ACC</div>
+                  <div class="name">Accesos / Cuenta</div>
+                  <div class="desc">Contraseña, permisos, usuario nuevo, baja</div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Section 3 — descripción -->
+            <div class="emp-section">
+              <div class="h">
+                <span class="num">[03]</span>
+                <span class="t">Descríbenos qué pasa</span>
+                <span class="sub">mientras más detalle, más rápido se resuelve</span>
+              </div>
+              <div class="emp-grid">
+                <div class="emp-fld s12">
+                  <label class="fl">Resumen breve <span class="req">*</span></label>
+                  <input type="text" value="La impresora de la oficina no imprime las facturas" />
+                  <div class="help">Una línea — como si fuera el asunto de un correo.</div>
+                </div>
+                <div class="emp-fld s12">
+                  <label class="fl">Descripción detallada <span class="req">*</span></label>
+                  <textarea>Desde esta mañana la impresora de la oficina de Administración (HP LaserJet del lado de los archivos) no responde cuando le mandamos a imprimir desde Salesforce. La luz amarilla está parpadeando. Reinicié la computadora y la impresora una vez y volvió a hacer lo mismo. Tengo facturas atrasadas para entregar al despacho de las 3pm.</textarea>
+                  <div class="help">Incluye: qué intentaste, cuándo empezó, qué mensaje sale, a quién afecta.</div>
+                </div>
+                <div class="emp-fld s6">
+                  <label class="fl">¿Cuándo empezó?</label>
+                  <select>
+                    <option>Hoy en la mañana</option>
+                    <option>Ayer</option>
+                    <option>Esta semana</option>
+                    <option>Hace más de una semana</option>
+                    <option>Es intermitente</option>
+                  </select>
+                </div>
+                <div class="emp-fld s6">
+                  <label class="fl">¿A quién afecta?</label>
+                  <select>
+                    <option>Solo a mí</option>
+                    <option>A mi equipo (varias personas)</option>
+                    <option>A toda la sucursal</option>
+                    <option>A varias sucursales</option>
+                  </select>
+                </div>
+                <div class="emp-fld s12">
+                  <label class="fl">Equipo afectado <span style="color: var(--ink-4); font-weight: 400;">(opcional)</span></label>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <span class="asset-tag"><b>HP-LJ-204</b> · Impresora · Bayamón-Admin</span>
+                    <button class="btn" style="font-size: 12px; padding: 5px 10px;">+ Agregar otro</button>
+                  </div>
+                </div>
+                <div class="emp-fld s12">
+                  <label class="fl">Adjuntar foto o pantallazo <span style="color: var(--ink-4); font-weight: 400;">(opcional)</span></label>
+                  <div class="attach-zone">
+                    <div class="t">Arrastra un archivo o haz clic para seleccionar</div>
+                    <div class="s">PNG, JPG, PDF · máx 10 MB · ayuda mucho ver el error</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 4 — importancia -->
+            <div class="emp-section">
+              <div class="h">
+                <span class="num">[04]</span>
+                <span class="t">¿Qué tan urgente es?</span>
+                <span class="sub">UCG puede ajustarlo</span>
+              </div>
+              <div class="imp-pick">
+                <label class="alta sel">
+                  <input type="radio" name="imp" checked />
+                  <div class="name">Alta <span class="tag">Alta</span></div>
+                  <div class="desc">No puedo hacer mi trabajo · afecta operación · respuesta en 4h</div>
+                </label>
+                <label class="media">
+                  <input type="radio" name="imp" />
+                  <div class="name">Media <span class="tag">Media</span></div>
+                  <div class="desc">Tengo un workaround pero molesta · respuesta en 12h</div>
+                </label>
+                <label class="baja">
+                  <input type="radio" name="imp" />
+                  <div class="name">Baja <span class="tag">Baja</span></div>
+                  <div class="desc">No es urgente · puede esperar · respuesta en 24h</div>
+                </label>
+              </div>
+            </div>
+
+            <div class="emp-foot-actions">
+              <div class="info">
+                Al enviar, recibirás un <b>número de ticket</b> por correo y podrás seguirlo desde <b>Mis Tickets</b>.
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn">Cancelar</button>
+                <button class="btn primary" onclick="saveTicket()">Enviar a IT</button>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- RIGHT rail -->
+        <aside class="emp-rail">
+          <div class="rail-card">
+            <div class="rail-card-h"><h4>Mi cuenta</h4></div>
+            <div class="rail-card-b">
+              <div class="me-row">
+                <div class="me-init">MR</div>
+                <div>
+                  <div class="me-name">Marisol Ríos</div>
+                  <div class="me-role">Administración · Bayamón</div>
+                </div>
+              </div>
+              <div class="kv-rail"><div class="k">Empleado #</div><div class="v mono">EMP-2104</div></div>
+              <div class="kv-rail"><div class="k">SSO</div><div class="v">m.rios@tropigas.pr</div></div>
+              <div class="kv-rail"><div class="k">Supervisor</div><div class="v">L. Vega</div></div>
+              <div class="kv-rail"><div class="k">Equipo asig.</div><div class="v mono">LT-BYM-0114</div></div>
+            </div>
+          </div>
+
+          <div class="rail-card">
+            <div class="rail-card-h"><h4>Mis tickets</h4><div class="ed">Ver todos · 7</div></div>
+            <div class="rail-card-b" style="padding: 6px 14px 14px;">
+              <div class="my-tickets-row">
+                <span class="id">SM-00041</span>
+                <span class="desc">Salesforce no carga reportes</span>
+                <span class="stat-mini" style="background: var(--imp-media-bg); color: var(--imp-media-fg);">Progr.</span>
+              </div>
+              <div class="my-tickets-row">
+                <span class="id">SM-00038</span>
+                <span class="desc">VPN se desconecta cada 10 min</span>
+                <span class="stat-mini" style="background: var(--imp-media-bg); color: var(--imp-media-fg);">Progr.</span>
+              </div>
+              <div class="my-tickets-row">
+                <span class="id">SM-00029</span>
+                <span class="desc">Reset de contraseña EMAS</span>
+                <span class="stat-mini" style="background: #D1FAE5; color: #065F46;">Resu.</span>
+              </div>
+              <div class="my-tickets-row">
+                <span class="id">SM-00021</span>
+                <span class="desc">Monitor 2 no enciende</span>
+                <span class="stat-mini" style="background: #D1FAE5; color: #065F46;">Resu.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="rail-card">
+            <div class="rail-card-h"><h4>Antes de reportar</h4></div>
+            <div class="rail-card-b">
+              <ul class="tip-list">
+                <li>¿Reiniciaste el equipo? Es lo primero que pregunta IT.</li>
+                <li>Para <b>contraseñas</b> usa primero <b>Reset SSO</b> · ahorra 10 min.</li>
+                <li>Si es <b>fuga de gas</b> u <b>operación de planta</b> → llama a tu planta, no este portal.</li>
+                <li>Adjunta un pantallazo del error · acelera mucho.</li>
+              </ul>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="live"><b>CONECTADO</b></span>
+      <span><b>BASE</b> tropigas_pr_v3</span>
+      <span><b>USR</b> m.rios · empleado</span>
+      <span class="right"><b>REL</b> 1.1.0 · sync hace 2s</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 2 — IT RESPONDER (UCG L2 console) -->
+<!-- ============================================================ -->
+<div id="screen-it" class="screen">
+  <div class="it-app">
+    <div class="top-bar">
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <div>
+          <div class="brand-name">TROPIGAS<span class="pr-flag"></span></div>
+          <div class="brand-sub">Portal Operativo · UCG IT</div>
+        </div>
+      </div>
+      <div class="top-meta">
+        <div class="top-meta-cell">
+          <div class="top-meta-k">Sistema</div>
+          <div class="top-meta-v live">Operativo</div>
+        </div>
+        <div class="top-meta-cell">
+          <div class="top-meta-k">SLA día</div>
+          <div class="top-meta-v" style="color: #4ADE80;">94%</div>
+        </div>
+        <div class="top-meta-cell">
+          <div class="top-meta-k">Hora AST</div>
+          <div class="top-meta-v" style="font-family: var(--font-mono);">14:35</div>
+        </div>
+      </div>
+      <div class="top-spacer"></div>
+      <div class="top-user">
+        <div class="top-user-init" style="background: var(--tg-red); color: var(--paper);">JM</div>
+        <div>
+          <div class="top-user-name">J. Marrero</div>
+          <div class="top-user-role">UCG · Mesa de Ayuda IT</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="it-tabs">
+      <button class="it-tab"><span class="tab-num">[01]</span>Dashboard</button>
+      <button class="it-tab on"><span class="tab-num">[02]</span>Gestión de Tickets <span class="tab-c">14</span></button>
+      <button class="it-tab"><span class="tab-num">[03]</span>Inventario · Activos</button>
+      <button class="it-tab"><span class="tab-num">[04]</span>Base de Conocimiento</button>
+      <button class="it-tab"><span class="tab-num">[05]</span>Reportes</button>
+      <div class="it-tabs-spacer"></div>
+      <div class="it-tabs-meta">
+        <span>Detalle de ticket · <span class="pip" id="cur-id">SM-00043</span></span>
+      </div>
+    </div>
+
+    <div class="it-main">
+      <!-- LEFT — queue -->
+      <aside class="it-queue">
+        <div class="queue-h">
+          <div class="t">Cola de IT</div>
+          <div class="c">14 abiertos</div>
+        </div>
+        <div class="queue-filter">
+          <button class="on">Mis tickets <span class="n">04</span></button>
+          <button>Equipo <span class="n">14</span></button>
+          <button>Sin asignar <span class="n">02</span></button>
+        </div>
+
+        <div class="q-row sel" onclick="selRow(this)">
+          <div class="q-row-1">
+            <div class="q-row-id">SM-00043 <span class="sf">EMP-2104</span></div>
+            <div class="q-row-time urg">3h 58m</div>
+          </div>
+          <div class="q-row-2">Impresora no imprime facturas · HP-LJ-204</div>
+          <div class="q-row-3">
+            <span class="imp imp-Alta">Alta</span>
+            <span class="stat stat-Recibido">Recibido</span>
+            <span>· M. Ríos · Bayamón</span>
+          </div>
+        </div>
+
+        <div class="q-row" onclick="selRow(this)">
+          <div class="q-row-1">
+            <div class="q-row-id">SM-00041 <span class="sf">EMP-1809</span></div>
+            <div class="q-row-time urg">42m</div>
+          </div>
+          <div class="q-row-2">Salesforce no carga reportes · varios usuarios</div>
+          <div class="q-row-3">
+            <span class="imp imp-Alta">Alta</span>
+            <span class="stat stat-Progreso">En progreso</span>
+            <span>· Despacho · Mayagüez</span>
+          </div>
+        </div>
+
+        <div class="q-row" onclick="selRow(this)">
+          <div class="q-row-1">
+            <div class="q-row-id">SM-00038 <span class="sf">EMP-2104</span></div>
+            <div class="q-row-time">7h 22m</div>
+          </div>
+          <div class="q-row-2">VPN se desconecta cada 10 min</div>
+          <div class="q-row-3">
+            <span class="imp imp-Media">Media</span>
+            <span class="stat stat-Progreso">En progreso</span>
+            <span>· Admin · Bayamón</span>
+          </div>
+        </div>
+
+        <div class="q-row" onclick="selRow(this)">
+          <div class="q-row-1">
+            <div class="q-row-id">SM-00035 <span class="sf">EMP-3322</span></div>
+            <div class="q-row-time">2d</div>
+          </div>
+          <div class="q-row-2">EMAS — error al cerrar caja del día</div>
+          <div class="q-row-3">
+            <span class="imp imp-Media">Media</span>
+            <span class="stat stat-Progreso">En progreso</span>
+            <span>· Sucursal · Caguas</span>
+          </div>
+        </div>
+
+        <div class="q-row" onclick="selRow(this)">
+          <div class="q-row-1">
+            <div class="q-row-id">SM-00031 <span class="sf">EMP-4512</span></div>
+            <div class="q-row-time">3d</div>
+          </div>
+          <div class="q-row-2">WiFi sucursal lento · planta completa</div>
+          <div class="q-row-3">
+            <span class="imp imp-Media">Media</span>
+            <span class="stat stat-Progreso">En progreso</span>
+            <span>· Planta · Arecibo</span>
+          </div>
+        </div>
+
+        <div class="q-row" onclick="selRow(this)">
+          <div class="q-row-1">
+            <div class="q-row-id">SM-00029 <span class="sf">EMP-2104</span></div>
+            <div class="q-row-time">5d</div>
+          </div>
+          <div class="q-row-2">Reset de contraseña · EMAS</div>
+          <div class="q-row-3">
+            <span class="imp imp-Baja">Baja</span>
+            <span class="stat stat-Resuelto">Resuelto</span>
+            <span>· Admin · Bayamón</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT — detail -->
+      <main class="it-detail">
+        <div class="it-d-banner">
+          <div class="it-d-1">
+            <div>
+              <div class="it-d-id-row">
+                <span class="it-d-id">SM-00043</span>
+                <span class="it-d-sf">Empleado <b>EMP-2104</b> · Activo <b>HP-LJ-204</b></span>
+                <span class="q-row-3" style="display: inline-flex;">
+                  <span class="imp imp-Alta">Alta · 4h</span>
+                  <span class="stat stat-Recibido">Recibido</span>
+                </span>
+              </div>
+              <h1 class="it-d-h1">Impresora no imprime facturas · HP-LJ-204</h1>
+              <div class="it-d-sub">
+                <span><b>M. Ríos</b> · Administración</span>
+                <span>Bayamón · Oficina central</span>
+                <span>Categoría <b>Hardware</b></span>
+                <span>Origen <b>Portal Empleado</b></span>
+                <span>Recibido <b>14:32 AST</b> · hace 3m</span>
+              </div>
+            </div>
+            <div class="it-d-actions">
+              <button class="btn">Asignar</button>
+              <button class="btn">Posponer</button>
+              <button class="btn primary">Tomar y trabajar</button>
+            </div>
+          </div>
+
+          <div class="it-d-tabs">
+            <button class="it-d-tab on"><span class="n">[A]</span>Detalles</button>
+            <button class="it-d-tab"><span class="n">[B]</span>Conversación <span class="c">2</span></button>
+            <button class="it-d-tab"><span class="n">[C]</span>Solución</button>
+            <button class="it-d-tab"><span class="n">[D]</span>Activos · 1</button>
+            <button class="it-d-tab"><span class="n">[E]</span>Bitácora <span class="c">5</span></button>
+          </div>
+        </div>
+
+        <div class="it-d-body">
+          <div>
+            <!-- Reported problem -->
+            <div class="panel">
+              <div class="panel-h">
+                <h4>Problema reportado</h4>
+                <div class="meta">enviado por el empleado · vía Portal</div>
+              </div>
+              <div class="panel-b">
+                <div class="desc-block">
+                  Desde esta mañana la impresora de la oficina de Administración (HP LaserJet
+                  del lado de los archivos) no responde cuando le mandamos a imprimir desde
+                  Salesforce. La luz amarilla está parpadeando. Reinicié la computadora y la
+                  impresora una vez y volvió a hacer lo mismo. Tengo facturas atrasadas para
+                  entregar al despacho de las 3pm.
+                </div>
+                <div style="margin-top: 12px; display: flex; gap: 16px; font-size: 12px; color: var(--ink-4);">
+                  <span>Empezó <b style="color: var(--ink-2);">hoy en la mañana</b></span>
+                  <span>Afecta <b style="color: var(--ink-2);">solo a mí</b></span>
+                  <span>Adjuntos <b style="color: var(--ink-2);">0</b></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Conversation -->
+            <div class="panel">
+              <div class="panel-h">
+                <h4>Conversación · Bitácora</h4>
+                <div class="meta">5 eventos · más reciente arriba</div>
+              </div>
+              <div class="panel-b" style="padding: 0 16px;">
+                <div class="timeline">
+                  <div class="tl-row sys">
+                    <div><div class="tl-line"></div><div class="tl-dot"></div></div>
+                    <div>
+                      <div class="tl-meta"><b>14:35</b> · sistema</div>
+                      <div class="tl-text sys">SLA Alta aplicado · vence 18:32 AST · auto-asignado a J. Marrero (turno tarde).</div>
+                    </div>
+                  </div>
+                  <div class="tl-row it">
+                    <div><div class="tl-line"></div><div class="tl-dot"></div></div>
+                    <div>
+                      <div class="tl-meta"><span class="who it">J. Marrero · UCG IT</span> · <b>14:34</b> · mensaje al empleado</div>
+                      <div class="tl-text">
+                        Hola Marisol, recibido. Voy a revisar la cola de la HP-LJ-204 remoto.
+                        ¿Puedes confirmar si las otras computadoras de Administración también
+                        intentaron imprimir y fallaron? Mientras tanto, prueba imprimir a la
+                        HP-LJ-205 (la del pasillo) — ya la dejé en tu lista por si acaso.
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tl-row sys">
+                    <div><div class="tl-line"></div><div class="tl-dot"></div></div>
+                    <div>
+                      <div class="tl-meta"><b>14:33</b> · sistema</div>
+                      <div class="tl-text sys">Ticket asignado a J. Marrero · UCG IT (toma manual).</div>
+                    </div>
+                  </div>
+                  <div class="tl-row cust">
+                    <div><div class="tl-line"></div><div class="tl-dot"></div></div>
+                    <div>
+                      <div class="tl-meta"><b>M. Ríos</b> · empleado · <b>14:32</b></div>
+                      <div class="tl-text">
+                        "La impresora de la oficina no imprime las facturas." — descripción
+                        completa enviada desde el Portal del Empleado.
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tl-row sys">
+                    <div><div class="tl-line"></div><div class="tl-dot"></div></div>
+                    <div>
+                      <div class="tl-meta"><b>14:32</b> · sistema</div>
+                      <div class="tl-text sys">Ticket creado vía Portal del Empleado · activo HP-LJ-204 vinculado.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="composer">
+                  <div class="modes">
+                    <button class="mode on">Mensaje a M. Ríos</button>
+                    <button class="mode">Nota interna</button>
+                    <button class="mode">Adjuntar</button>
+                    <button class="mode">Plantilla KB</button>
+                  </div>
+                  <textarea placeholder="Tu respuesta llegará al empleado por correo y aparecerá en su Portal."></textarea>
+                  <div class="actions">
+                    <span class="left">Enter envía · Shift+Enter inserta línea</span>
+                    <button class="btn">Marcar como Resuelto</button>
+                    <button class="btn primary">Enviar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT rail -->
+          <div>
+            <div class="rail-block">
+              <div class="rail-h"><h4>SLA</h4><div class="ed">tiempo restante</div></div>
+              <div class="rail-b">
+                <div class="sla-bar-rail">
+                  <div class="nums"><div class="left">3h 58m</div><div class="right">/ 4h Alta</div></div>
+                  <div class="track"><div class="fill" style="width: 1.5%; background: var(--st-done);"></div></div>
+                  <div class="lbl">Vence 18:32 AST · cumpliendo</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rail-block">
+              <div class="rail-h"><h4>Asignado</h4><div class="ed">Reasignar</div></div>
+              <div class="rail-b">
+                <div class="assignee-row">
+                  <div class="assignee-init">JM</div>
+                  <div>
+                    <div class="assignee-name">J. Marrero</div>
+                    <div class="assignee-role">UCG · Mesa de Ayuda IT</div>
+                  </div>
+                </div>
+                <div class="kv-rail"><div class="k">Turno</div><div class="v">Tarde · 13:00–21:00</div></div>
+                <div class="kv-rail"><div class="k">Carga</div><div class="v">4 abiertos</div></div>
+              </div>
+            </div>
+
+            <div class="rail-block">
+              <div class="rail-h"><h4>Empleado</h4><div class="ed">Abrir perfil</div></div>
+              <div class="rail-b">
+                <div class="kv-rail"><div class="k">Nombre</div><div class="v">Marisol Ríos</div></div>
+                <div class="kv-rail"><div class="k">Empleado #</div><div class="v mono">EMP-2104</div></div>
+                <div class="kv-rail"><div class="k">Departamento</div><div class="v">Administración</div></div>
+                <div class="kv-rail"><div class="k">Sucursal</div><div class="v">Bayamón · Oficina central</div></div>
+                <div class="kv-rail"><div class="k">Supervisor</div><div class="v">L. Vega</div></div>
+                <div class="kv-rail"><div class="k">Contacto</div><div class="v">ext. 2104 · correo</div></div>
+              </div>
+            </div>
+
+            <div class="rail-block">
+              <div class="rail-h"><h4>Activo afectado</h4><div class="ed">Ver historial</div></div>
+              <div class="rail-b">
+                <div class="kv-rail"><div class="k">Tag</div><div class="v mono">HP-LJ-204</div></div>
+                <div class="kv-rail"><div class="k">Tipo</div><div class="v">Impresora · HP LaserJet Pro</div></div>
+                <div class="kv-rail"><div class="k">Ubicación</div><div class="v">Bayamón-Admin · Archivos</div></div>
+                <div class="kv-rail"><div class="k">IP</div><div class="v mono">10.42.1.204</div></div>
+                <div class="kv-rail"><div class="k">Garantía</div><div class="v">Vence 11/2026</div></div>
+                <div class="kv-rail"><div class="k">Últ. servicio</div><div class="v">22 ene 2026</div></div>
+              </div>
+            </div>
+
+            <div class="rail-block">
+              <div class="rail-h"><h4>Sugerencias KB</h4><div class="ed">Ver más</div></div>
+              <div class="rail-b" style="gap: 0;">
+                <div class="related-row">
+                  <span class="id">KB-014</span>
+                  <span class="desc">HP LaserJet · luz amarilla parpadea</span>
+                  <span class="stat-mini" style="background: var(--imp-baja-bg); color: var(--imp-baja-fg);">Guía</span>
+                </div>
+                <div class="related-row">
+                  <span class="id">KB-029</span>
+                  <span class="desc">Limpiar cola de impresión Salesforce</span>
+                  <span class="stat-mini" style="background: var(--imp-baja-bg); color: var(--imp-baja-fg);">Guía</span>
+                </div>
+                <div class="related-row">
+                  <span class="id">KB-041</span>
+                  <span class="desc">Atasco de papel · pasos comunes</span>
+                  <span class="stat-mini" style="background: var(--imp-baja-bg); color: var(--imp-baja-fg);">Guía</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="foot">
+      <span class="live"><b>CONECTADO</b></span>
+      <span><b>BASE</b> tropigas_pr_v3</span>
+      <span><b>USR</b> j.marrero · UCG IT</span>
+      <span><b>COLA</b> 14 abiertos · 02 sin asignar</span>
+      <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(which) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+    document.getElementById('screen-' + which).classList.add('on');
+    document.querySelectorAll('.persona-bar button').forEach(b => b.classList.remove('on'));
+    document.getElementById('btn-' + which).classList.add('on');
+    try { localStorage.setItem('tg_persona', which); } catch (e) {}
+  }
+  function saveTicket() {
+    document.getElementById('save-banner').classList.add('on');
+    document.getElementById('save-banner').scrollIntoView ? null : null;
+  }
+  function selRow(row) {
+    document.querySelectorAll('.q-row').forEach(r => r.classList.remove('sel'));
+    row.classList.add('sel');
+  }
+  try {
+    const p = localStorage.getItem('tg_persona');
+    if (p === 'it' || p === 'emp') show(p);
+  } catch (e) {}
+</script>
+
+</body>
+</html>

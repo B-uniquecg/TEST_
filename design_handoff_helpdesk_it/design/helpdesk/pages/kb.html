@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>UCG IT · Base de Conocimiento</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<link rel="stylesheet" href="/design/helpdesk/_helpdesk-shared.css" />
+<style>
+  .app { display: grid; grid-template-rows: 56px auto 1fr 22px; height: 100vh; }
+  .body { overflow: hidden; background: var(--paper-2); display: grid; grid-template-columns: 260px 1fr 380px; }
+
+  /* LEFT — categories */
+  .kb-left { background: var(--paper); border-right: 1px solid var(--line); overflow-y: auto; }
+  .kb-left-h { padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .kb-left-h h3 { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--tg-navy); font-weight: 600; margin-bottom: 4px; }
+  .kb-left-h .c { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); }
+  .kb-cat { display: grid; grid-template-columns: 1fr auto; padding: 9px 18px; font-size: 13px; color: var(--ink-2); border-bottom: 1px solid var(--line-soft); cursor: pointer; align-items: center; }
+  .kb-cat:hover { background: var(--paper-2); }
+  .kb-cat.on { background: var(--paper-2); color: var(--ink); border-left: 3px solid var(--tg-red); padding-left: 15px; font-weight: 600; }
+  .kb-cat .n { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); }
+  .kb-cat.on .n { color: var(--tg-red); font-weight: 700; }
+  .kb-cat.head { font-size: 10px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; padding: 12px 18px 6px; border: none; cursor: default; }
+  .kb-cat.head:hover { background: none; }
+
+  /* MIDDLE — list */
+  .kb-mid { overflow-y: auto; }
+  .kb-mid-h { background: var(--paper); border-bottom: 1px solid var(--line); padding: 16px 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 5; }
+  .kb-mid-h h2 { font-family: var(--font-display); font-weight: 600; font-size: 20px; color: var(--ink); }
+  .kb-mid-h .sub { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+  .kb-search { background: var(--paper); border-bottom: 1px solid var(--line); padding: 12px 22px; display: flex; gap: 10px; align-items: center; }
+  .kb-search input[type=search] { flex: 1; background: var(--paper-2); }
+  .kb-toolbar { background: var(--paper); border-bottom: 1px solid var(--line); padding: 10px 22px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 11px; }
+  .kb-toolbar .lbl { font-size: 11px; color: var(--ink-4); letter-spacing: 0.10em; text-transform: uppercase; font-weight: 600; }
+  .chip { font-size: 11px; padding: 4px 10px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-3); border-radius: 14px; font-weight: 500; cursor: pointer; }
+  .chip:hover { background: var(--paper-2); color: var(--ink); }
+  .chip.on { background: var(--tg-navy); color: var(--paper); border-color: var(--tg-navy); }
+
+  .kb-list { padding: 18px 22px; }
+  .kb-card { background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 16px 18px; margin-bottom: 10px; box-shadow: var(--shadow-1); cursor: pointer; transition: border-color 0.12s; }
+  .kb-card:hover { border-color: var(--tg-navy); }
+  .kb-card.active { border-color: var(--tg-red); border-left: 4px solid var(--tg-red); padding-left: 14px; box-shadow: var(--shadow-2); }
+  .kb-card-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .kb-card-id { font-family: var(--font-mono); font-size: 11px; color: var(--tg-red); font-weight: 700; letter-spacing: 0.06em; }
+  .kb-card-meta { font-size: 11px; color: var(--ink-4); display: flex; gap: 12px; }
+  .kb-card-title { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; line-height: 1.35; }
+  .kb-card-blurb { font-size: 12px; color: var(--ink-3); line-height: 1.55; margin-bottom: 10px; }
+  .kb-card-foot { display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--ink-4); }
+  .kb-card-foot .tag { font-size: 10px; padding: 2px 7px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 2px; color: var(--ink-3); font-weight: 500; }
+  .kb-card-foot .uses { font-family: var(--font-mono); color: var(--tg-navy); font-weight: 600; }
+  .kb-card-foot .stamp { margin-left: auto; }
+
+  /* RIGHT — preview */
+  .kb-right { background: var(--paper); border-left: 1px solid var(--line); overflow-y: auto; }
+  .kb-pv-h { padding: 18px 22px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+  .kb-pv-id { font-family: var(--font-mono); font-size: 11px; color: var(--tg-red); font-weight: 700; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .kb-pv-title { font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--ink); line-height: 1.3; margin-bottom: 10px; }
+  .kb-pv-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 11px; }
+  .kb-pv-meta .k { color: var(--ink-4); letter-spacing: 0.05em; text-transform: uppercase; font-size: 10px; font-weight: 600; }
+  .kb-pv-meta .v { color: var(--ink); font-weight: 500; }
+  .kb-pv-actions { display: flex; gap: 6px; padding: 12px 22px; background: var(--paper-2); border-bottom: 1px solid var(--line); }
+
+  .kb-pv-b { padding: 18px 22px; }
+  .kb-pv-b h5 { font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--tg-navy); font-weight: 600; margin-bottom: 8px; margin-top: 18px; }
+  .kb-pv-b h5:first-child { margin-top: 0; }
+  .kb-pv-b p { font-size: 13px; color: var(--ink-2); line-height: 1.55; margin-bottom: 8px; }
+  .kb-pv-b .symptoms { background: #FFFBEB; border-left: 3px solid #F59E0B; padding: 10px 14px; border-radius: 0 3px 3px 0; font-size: 12px; color: var(--ink-2); line-height: 1.55; }
+  .kb-pv-b .symptoms b { color: #92400E; }
+  .kb-pv-b ol { padding-left: 4px; counter-reset: step; list-style: none; }
+  .kb-pv-b ol li { counter-increment: step; padding: 8px 0 8px 30px; position: relative; font-size: 13px; color: var(--ink-2); line-height: 1.55; border-bottom: 1px solid var(--line-soft); }
+  .kb-pv-b ol li::before { content: counter(step); position: absolute; left: 0; top: 8px; width: 22px; height: 22px; background: var(--tg-navy); color: var(--paper); border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); }
+  .kb-pv-b ol li:last-child { border: none; }
+  .kb-pv-b code { font-family: var(--font-mono); background: var(--paper-2); padding: 1px 5px; border-radius: 2px; font-size: 11px; color: var(--ink); }
+
+  .kb-pv-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kb-pv-stat { background: var(--paper-2); padding: 10px 12px; border-radius: 3px; }
+  .kb-pv-stat-k { font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; margin-bottom: 4px; }
+  .kb-pv-stat-v { font-size: 18px; font-weight: 700; color: var(--ink); font-family: var(--font-mono); line-height: 1; }
+  .kb-pv-stat-s { font-size: 11px; color: var(--ink-4); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div>
+        <div class="brand-name">TROPIGAS<span class="pr-flag"></span></div>
+        <div class="brand-sub">Portal Operativo · UCG IT</div>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div class="top-meta-cell"><div class="top-meta-k">Artículos</div><div class="top-meta-v">38 · 35 publicados</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">Uso · 30d</div><div class="top-meta-v">412 referencias</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">Hora AST</div><div class="top-meta-v mono">14:47</div></div>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="top-user">
+      <div class="top-user-init" style="background: var(--tg-red); color: var(--paper);">JM</div>
+      <div><div class="top-user-name">J. Marrero</div><div class="top-user-role">UCG · Mesa de Ayuda IT</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="it-tabs">
+    <a href="/dashboard" class="it-tab"><span class="tab-num">[01]</span>Dashboard</a>
+    <a href="/tickets" class="it-tab"><span class="tab-num">[02]</span>Gestión de Tickets <span class="tab-c">14</span></a>
+    <a href="/asignar" class="it-tab"><span class="tab-num">[03]</span>Asignar <span class="tab-c">02</span></a>
+    <a href="/kb" class="it-tab on"><span class="tab-num">[04]</span>Base de Conocimiento <span class="tab-c">38</span></a>
+    <a href="/reportes" class="it-tab"><span class="tab-num">[05]</span>Reportes</a>
+    <div class="it-tabs-spacer"></div>
+    <div class="it-tabs-meta"><span>Vista <span class="pip">CONOCIMIENTO</span> · ahorró ~28h al equipo este mes</span></div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+    <!-- LEFT -->
+    <aside class="kb-left">
+      <div class="kb-left-h">
+        <h3>Categorías</h3>
+        <div class="c">38 artículos · 6 categorías</div>
+      </div>
+      <div class="kb-cat on"><span>Todos</span><span class="n">38</span></div>
+      <div class="kb-cat"><span>★ Más usados</span><span class="n">10</span></div>
+      <div class="kb-cat"><span>Recientes</span><span class="n">06</span></div>
+      <div class="kb-cat"><span>Borradores</span><span class="n">03</span></div>
+
+      <div class="kb-cat head">Por categoría</div>
+      <div class="kb-cat"><span>🖨 Hardware</span><span class="n">12</span></div>
+      <div class="kb-cat"><span>🌐 Red & VPN</span><span class="n">07</span></div>
+      <div class="kb-cat"><span>🔐 Acceso & cuentas</span><span class="n">06</span></div>
+      <div class="kb-cat"><span>💻 Software</span><span class="n">05</span></div>
+      <div class="kb-cat"><span>📱 Telefonía</span><span class="n">04</span></div>
+      <div class="kb-cat"><span>⚙ Salesforce / EMAS</span><span class="n">04</span></div>
+
+      <div class="kb-cat head">Por sucursal</div>
+      <div class="kb-cat"><span>Bayamón</span><span class="n">15</span></div>
+      <div class="kb-cat"><span>Caguas</span><span class="n">09</span></div>
+      <div class="kb-cat"><span>Ponce</span><span class="n">07</span></div>
+      <div class="kb-cat"><span>Mayagüez</span><span class="n">07</span></div>
+      <div class="kb-cat"><span>Aplica a todas</span><span class="n">22</span></div>
+    </aside>
+
+    <!-- MIDDLE -->
+    <main class="kb-mid">
+      <div class="kb-mid-h">
+        <div>
+          <h2>Base de Conocimiento</h2>
+          <div class="sub">Soluciones documentadas del equipo · convertidas desde tickets resueltos</div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn">Importar</button>
+          <button class="btn primary">+ Nuevo artículo</button>
+        </div>
+      </div>
+
+      <div class="kb-search">
+        <input type="search" placeholder="Buscar por palabra clave, código de error, modelo de equipo…" value="cola impresion salesforce" />
+        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-4);">3 resultados</span>
+      </div>
+
+      <div class="kb-toolbar">
+        <span class="lbl">Filtros:</span>
+        <button class="chip on">Todos los tipos</button>
+        <button class="chip">Procedimiento</button>
+        <button class="chip">Diagnóstico</button>
+        <button class="chip">FAQ</button>
+        <span style="margin-left: 16px;" class="lbl">Audiencia:</span>
+        <button class="chip on">Cualquiera</button>
+        <button class="chip">Solo IT</button>
+        <button class="chip">Empleados</button>
+        <span style="margin-left: auto; color: var(--ink-4);">Ordenar por <b style="color: var(--ink);">Más usado</b> ▾</span>
+      </div>
+
+      <div class="kb-list">
+        <div class="kb-card active">
+          <div class="kb-card-h">
+            <span class="kb-card-id">KB-029</span>
+            <span class="kb-card-meta"><span>Procedimiento</span> · <span>solo IT</span></span>
+          </div>
+          <div class="kb-card-title">Cola de impresión Salesforce atascada · HP LaserJet (todos los modelos)</div>
+          <div class="kb-card-blurb">Cuando Salesforce envía un batch grande de facturas y la impresora hace timeout, la cola completa queda atascada. Esta guía muestra cómo limpiar la cola en el print server con SSH en menos de 5 minutos.</div>
+          <div class="kb-card-foot">
+            <span class="tag">salesforce</span>
+            <span class="tag">impresion</span>
+            <span class="tag">hp-laserjet</span>
+            <span class="uses">↑ 12 usos · 30d</span>
+            <span class="stamp">Actualizado 04 may por R. Quiles</span>
+          </div>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-card-h">
+            <span class="kb-card-id">KB-014</span>
+            <span class="kb-card-meta"><span>Procedimiento</span> · <span>solo IT</span></span>
+          </div>
+          <div class="kb-card-title">Reiniciar print server <code style="background: var(--paper-2); padding: 1px 5px; border-radius: 2px; font-family: var(--font-mono); font-size: 11px;">ps-byn-01</code> sin afectar otras sucursales</div>
+          <div class="kb-card-blurb">Pasos para reiniciar el daemon CUPS del print server de Bayamón cuando hay múltiples colas atascadas. Incluye verificación previa de qué impresoras están afectadas.</div>
+          <div class="kb-card-foot">
+            <span class="tag">print-server</span>
+            <span class="tag">cups</span>
+            <span class="tag">bayamon</span>
+            <span class="uses">↑ 8 usos · 30d</span>
+            <span class="stamp">Actualizado 22 abr por R. Quiles</span>
+          </div>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-card-h">
+            <span class="kb-card-id">KB-007</span>
+            <span class="kb-card-meta"><span>FAQ</span> · <span>empleados</span></span>
+          </div>
+          <div class="kb-card-title">¿Qué hago si la impresora no imprime? — Guía rápida para el empleado</div>
+          <div class="kb-card-blurb">Tres pasos sencillos antes de abrir un ticket: verificar papel y tóner, apagar/encender la impresora, e imprimir una página de prueba. Si nada funciona, abrir ticket con foto del error.</div>
+          <div class="kb-card-foot">
+            <span class="tag">impresion</span>
+            <span class="tag">primeros-auxilios</span>
+            <span class="uses">↑ 31 usos · 30d</span>
+            <span class="stamp">Actualizado 11 abr por J. Marrero</span>
+          </div>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-card-h">
+            <span class="kb-card-id">KB-022</span>
+            <span class="kb-card-meta"><span>Procedimiento</span> · <span>solo IT</span></span>
+          </div>
+          <div class="kb-card-title">Reset de contraseña EMAS · usuario sin acceso al portal</div>
+          <div class="kb-card-blurb">Cuando un empleado no puede entrar a EMAS y tampoco al Portal del Empleado, se requiere un reset directo en el AD. Verificación de identidad obligatoria.</div>
+          <div class="kb-card-foot">
+            <span class="tag">emas</span>
+            <span class="tag">contraseña</span>
+            <span class="tag">active-directory</span>
+            <span class="uses">↑ 24 usos · 30d</span>
+            <span class="stamp">Actualizado 28 abr por L. Rivera</span>
+          </div>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-card-h">
+            <span class="kb-card-id">KB-018</span>
+            <span class="kb-card-meta"><span>Diagnóstico</span> · <span>solo IT</span></span>
+          </div>
+          <div class="kb-card-title">VPN se desconecta intermitentemente · técnicos en ruta</div>
+          <div class="kb-card-blurb">Patrón común con técnicos de servicio en zonas con cobertura LTE débil. Solución incluye ajuste de keepalive y configuración de fallback al hotspot del celular.</div>
+          <div class="kb-card-foot">
+            <span class="tag">vpn</span>
+            <span class="tag">tecnicos</span>
+            <span class="tag">conectividad</span>
+            <span class="uses">↑ 18 usos · 30d</span>
+            <span class="stamp">Actualizado 15 abr por R. Quiles</span>
+          </div>
+        </div>
+
+        <div class="kb-card">
+          <div class="kb-card-h">
+            <span class="kb-card-id">KB-031</span>
+            <span class="kb-card-meta"><span>Procedimiento</span> · <span>solo IT</span></span>
+          </div>
+          <div class="kb-card-title">Alta de usuario nuevo · técnico de servicio en sucursal</div>
+          <div class="kb-card-blurb">Checklist completo para dar acceso a un técnico recién contratado: AD, EMAS, Salesforce, asignación de equipo, configuración de celular corporativo, llaves de almacén.</div>
+          <div class="kb-card-foot">
+            <span class="tag">onboarding</span>
+            <span class="tag">tecnico</span>
+            <span class="tag">checklist</span>
+            <span class="uses">↑ 6 usos · 30d</span>
+            <span class="stamp">Actualizado 02 may por L. Rivera</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT — preview -->
+    <aside class="kb-right">
+      <div class="kb-pv-h">
+        <div class="kb-pv-id">KB-029 · v3.2</div>
+        <div class="kb-pv-title">Cola de impresión Salesforce atascada · HP LaserJet</div>
+        <div class="kb-pv-meta">
+          <div><div class="k">Categoría</div><div class="v">Hardware · Impresión</div></div>
+          <div><div class="k">Audiencia</div><div class="v">Solo IT</div></div>
+          <div><div class="k">Autor</div><div class="v">R. Quiles</div></div>
+          <div><div class="k">Tiempo aprox.</div><div class="v">5 min</div></div>
+          <div><div class="k">Creado</div><div class="v">12 mar 2026</div></div>
+          <div><div class="k">Actualizado</div><div class="v">04 may 2026</div></div>
+        </div>
+      </div>
+
+      <div class="kb-pv-actions">
+        <button class="btn sm">Editar</button>
+        <button class="btn sm">Aplicar a ticket actual</button>
+        <button class="btn sm">Compartir</button>
+        <button class="btn sm" style="margin-left: auto;">Historial · 8</button>
+      </div>
+
+      <div class="kb-pv-b">
+        <h5>Síntomas</h5>
+        <div class="symptoms">
+          <p><b>Empleado reporta:</b> "La impresora no imprime, hay luz amarilla parpadeando."</p>
+          <p style="margin-top: 6px;"><b>En Salesforce:</b> error <code>Print job timeout — queue stalled</code> al enviar facturas en batch (más de 10 documentos a la vez).</p>
+        </div>
+
+        <h5>Causa raíz</h5>
+        <p>Cuando Salesforce manda un batch grande, la impresora no responde al primer trabajo dentro del timeout (30s). Salesforce sigue mandando los demás. Como CUPS no descarta el primer job atascado, todos los siguientes quedan en cola esperando, y la impresora deja de procesar.</p>
+
+        <h5>Solución (5 minutos)</h5>
+        <ol>
+          <li>SSH al print server de la sucursal: <code>ssh ucg@ps-byn-01</code> (Bayamón) o <code>ps-cag-01</code>, <code>ps-pon-01</code>, <code>ps-may-01</code>.</li>
+          <li>Verificar la cola: <code>lpstat -o HP-LJ-204</code>. Si hay más de 5 trabajos, confirmar al empleado que vamos a limpiar (los trabajos no se recuperan).</li>
+          <li>Detener CUPS: <code>sudo systemctl stop cups</code>.</li>
+          <li>Limpiar spool: <code>sudo rm -rf /var/spool/cups/HP-LJ-204-*</code>.</li>
+          <li>Reiniciar CUPS: <code>sudo systemctl start cups</code> y verificar con <code>lpstat -o HP-LJ-204</code> (debe estar vacío).</li>
+          <li>Pedir al empleado que imprima una página de prueba desde Salesforce.</li>
+          <li>Si imprime → cerrar ticket. Si no → escalar a KB-014 (reiniciar print server completo).</li>
+        </ol>
+
+        <h5>Prevención</h5>
+        <p>En desarrollo: monitor de tamaño de cola en print servers (alerta si pasa de 20 trabajos). Asignado a R. Quiles · IT-PRV-014.</p>
+
+        <h5>Uso del artículo</h5>
+        <div class="kb-pv-stats">
+          <div class="kb-pv-stat"><div class="kb-pv-stat-k">Aplicado a tickets</div><div class="kb-pv-stat-v">12</div><div class="kb-pv-stat-s">últimos 30 días</div></div>
+          <div class="kb-pv-stat"><div class="kb-pv-stat-k">Tiempo ahorrado</div><div class="kb-pv-stat-v">~2.4h</div><div class="kb-pv-stat-s">vs. resolver desde cero</div></div>
+          <div class="kb-pv-stat"><div class="kb-pv-stat-k">Tasa de éxito</div><div class="kb-pv-stat-v">94%</div><div class="kb-pv-stat-s">11 de 12 resueltos</div></div>
+          <div class="kb-pv-stat"><div class="kb-pv-stat-k">Satisfacción</div><div class="kb-pv-stat-v">4.8</div><div class="kb-pv-stat-s">/ 5 · 9 reseñas</div></div>
+        </div>
+
+        <h5>Tickets relacionados</h5>
+        <p style="font-size: 12px; color: var(--ink-4);">SM-00043 · SM-00021 · SM-00009 · SM-00001 · y 8 más →</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="foot">
+    <span class="live"><b>CONECTADO</b></span>
+    <span><b>BASE</b> tropigas_pr_v3</span>
+    <span><b>USR</b> j.marrero · UCG IT</span>
+    <span><b>VISTA</b> KB · 38 artículos · 412 usos / 30d</span>
+    <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+  </div>
+</div>
+
+</body>
+</html>

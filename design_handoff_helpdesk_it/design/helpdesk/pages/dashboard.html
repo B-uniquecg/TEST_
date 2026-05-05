@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>UCG IT · Dashboard</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<link rel="stylesheet" href="/design/helpdesk/_helpdesk-shared.css" />
+<style>
+  .app { display: grid; grid-template-rows: 56px auto 1fr 22px; height: 100vh; }
+  .body { overflow-y: auto; background: var(--paper-2); padding: 24px 32px; }
+
+  .page-h { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 22px; gap: 24px; }
+  .page-h h1 { font-family: var(--font-display); font-weight: 800; font-size: 32px; line-height: 1.05; letter-spacing: -0.01em; color: var(--ink); }
+  .page-h .crumb { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; margin-bottom: 6px; }
+  .page-h .sub { font-size: 13px; color: var(--ink-4); margin-top: 6px; }
+  .page-h .actions { display: flex; gap: 8px; }
+
+  /* KPI row */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px; }
+  .kpi {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 4px;
+    padding: 18px 20px; box-shadow: var(--shadow-1);
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+  .kpi::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; }
+  .kpi.recibido::before { background: var(--st-new); }
+  .kpi.progreso::before { background: var(--st-prog); }
+  .kpi.resuelto::before { background: var(--st-done); }
+  .kpi.sla::before { background: var(--tg-navy); }
+  .kpi.alta::before { background: var(--tg-red); }
+  .kpi-k { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; }
+  .kpi-v { font-family: var(--font-ui); font-weight: 700; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); margin-top: 8px; }
+  .kpi-v .unit { font-size: 14px; color: var(--ink-4); font-weight: 500; margin-left: 4px; }
+  .kpi-trend { font-size: 11px; color: var(--ink-4); margin-top: 6px; font-family: var(--font-mono); }
+  .kpi-trend.up { color: var(--st-done); }
+  .kpi-trend.down { color: var(--tg-red); }
+
+  /* 2-column body grid */
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+
+  /* Recent tickets table */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-4); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+  .tbl td { padding: 10px 12px; font-size: 13px; color: var(--ink-2); border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+  .tbl tr:hover td { background: var(--paper-2); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl .id-cell { font-family: var(--font-mono); font-weight: 700; color: var(--ink); font-size: 12px; }
+  .tbl .summary { color: var(--ink); font-weight: 500; }
+  .tbl .when { font-family: var(--font-mono); font-size: 11px; color: var(--ink-4); }
+  .tbl .when.urg { color: var(--tg-red); font-weight: 600; }
+  .tbl tr { cursor: pointer; }
+
+  /* SLA gauge */
+  .sla-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sla-card { padding: 18px; }
+  .sla-num { font-family: var(--font-ui); font-weight: 700; font-size: 48px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .sla-num.ok { color: var(--st-done); }
+  .sla-num.risk { color: var(--sla-riesgo); }
+  .sla-lbl { font-size: 11px; color: var(--ink-4); margin-top: 6px; letter-spacing: 0.10em; text-transform: uppercase; font-weight: 600; }
+  .sla-bar { height: 8px; background: var(--paper-3); border-radius: 4px; overflow: hidden; margin-top: 12px; }
+  .sla-bar-fill { height: 100%; background: var(--st-done); }
+
+  /* Bar chart */
+  .bars { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding: 8px 0; }
+  .bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar .b { width: 100%; background: var(--tg-navy); border-radius: 2px 2px 0 0; min-height: 3px; position: relative; }
+  .bar .b.t { background: var(--tg-red); }
+  .bar .lbl { font-size: 10px; color: var(--ink-4); font-family: var(--font-mono); }
+  .bar .val { font-size: 11px; color: var(--ink); font-weight: 600; font-family: var(--font-mono); }
+
+  /* Donut categories */
+  .cat-list { display: flex; flex-direction: column; gap: 12px; }
+  .cat-item { display: grid; grid-template-columns: 80px 1fr 50px; gap: 12px; align-items: center; font-size: 12px; }
+  .cat-item .name { color: var(--ink-2); font-weight: 500; }
+  .cat-item .bar2 { height: 6px; background: var(--paper-3); border-radius: 3px; overflow: hidden; }
+  .cat-item .bar2-fill { height: 100%; }
+  .cat-item .num { font-family: var(--font-mono); font-weight: 700; color: var(--ink); text-align: right; }
+
+  /* Activity feed */
+  .feed { display: flex; flex-direction: column; }
+  .feed-row { padding: 10px 0; display: grid; grid-template-columns: 56px 1fr; gap: 10px; border-bottom: 1px solid var(--line-soft); font-size: 12px; align-items: baseline; }
+  .feed-row:last-child { border-bottom: none; }
+  .feed-time { font-family: var(--font-mono); color: var(--ink-4); font-size: 11px; }
+  .feed-text { color: var(--ink-2); line-height: 1.5; }
+  .feed-text b { color: var(--ink); }
+  .feed-text .id { font-family: var(--font-mono); font-weight: 700; color: var(--tg-navy); }
+  .feed-text .tag { font-size: 9px; padding: 1px 5px; border-radius: 2px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* Team load */
+  .team-row { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); align-items: center; font-size: 12px; }
+  .team-row:last-child { border-bottom: none; }
+  .team-init { width: 32px; height: 32px; border-radius: 50%; background: var(--tg-red); color: var(--paper); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+  .team-name { font-weight: 600; color: var(--ink); }
+  .team-role { font-size: 11px; color: var(--ink-4); }
+  .team-load { display: flex; align-items: center; gap: 8px; }
+  .team-load .n { font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+  .team-load .lb { font-size: 10px; color: var(--ink-4); }
+  .team-bar { width: 80px; height: 6px; background: var(--paper-3); border-radius: 3px; overflow: hidden; }
+  .team-bar-fill { height: 100%; background: var(--st-prog); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-bar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div>
+        <div class="brand-name">TROPIGAS<span class="pr-flag"></span></div>
+        <div class="brand-sub">Portal Operativo · UCG IT</div>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div class="top-meta-cell"><div class="top-meta-k">Sistema</div><div class="top-meta-v live">Operativo</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">SLA día</div><div class="top-meta-v" style="color: #4ADE80;">94%</div></div>
+      <div class="top-meta-cell"><div class="top-meta-k">Hora AST</div><div class="top-meta-v mono">14:35</div></div>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="top-user">
+      <div class="top-user-init" style="background: var(--tg-red); color: var(--paper);">JM</div>
+      <div>
+        <div class="top-user-name">J. Marrero</div>
+        <div class="top-user-role">UCG · Mesa de Ayuda IT</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="it-tabs">
+    <a href="/dashboard" class="it-tab on"><span class="tab-num">[01]</span>Dashboard</a>
+    <a href="/tickets" class="it-tab"><span class="tab-num">[02]</span>Gestión de Tickets <span class="tab-c">14</span></a>
+    <a href="/asignar" class="it-tab"><span class="tab-num">[03]</span>Asignar <span class="tab-c">02</span></a>
+    <a href="/kb" class="it-tab"><span class="tab-num">[04]</span>Base de Conocimiento <span class="tab-c">38</span></a>
+    <a href="/reportes" class="it-tab"><span class="tab-num">[05]</span>Reportes</a>
+    <div class="it-tabs-spacer"></div>
+    <div class="it-tabs-meta"><span>Vista <span class="pip">DASHBOARD</span> · turno tarde</span></div>
+  </div>
+
+  <div class="body">
+    <div class="page-h">
+      <div>
+        <div class="crumb">UCG IT / Dashboard</div>
+        <h1>Buenas tardes, Jorge.</h1>
+        <div class="sub">Tu equipo recibió <b>14 tickets</b> hoy · <b>2 sin asignar</b> · resolución promedio <b>3h 12m</b></div>
+      </div>
+      <div class="actions">
+        <button class="btn">Exportar</button>
+        <button class="btn">Hoy ▾</button>
+        <a href="/tickets" class="btn primary">Ver cola completa →</a>
+      </div>
+    </div>
+
+    <!-- KPI row -->
+    <div class="kpi-row">
+      <div class="kpi recibido">
+        <div class="kpi-k">Recibidos · hoy</div>
+        <div class="kpi-v">14</div>
+        <div class="kpi-trend up">↑ 2 vs. ayer</div>
+      </div>
+      <div class="kpi progreso">
+        <div class="kpi-k">En progreso</div>
+        <div class="kpi-v">09</div>
+        <div class="kpi-trend">4 con SLA en riesgo</div>
+      </div>
+      <div class="kpi resuelto">
+        <div class="kpi-k">Resueltos · hoy</div>
+        <div class="kpi-v">11</div>
+        <div class="kpi-trend up">↑ promedio 2.8h</div>
+      </div>
+      <div class="kpi sla">
+        <div class="kpi-k">SLA cumplido</div>
+        <div class="kpi-v">94<span class="unit">%</span></div>
+        <div class="kpi-trend up">objetivo 90%</div>
+      </div>
+      <div class="kpi alta">
+        <div class="kpi-k">Alta importancia</div>
+        <div class="kpi-v">03</div>
+        <div class="kpi-trend down">1 vence en &lt;1h</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Left column -->
+      <div>
+        <!-- Recent tickets -->
+        <div class="panel">
+          <div class="panel-h">
+            <h4>Tickets recientes</h4>
+            <div class="meta"><a href="/tickets" style="color: var(--ink-4); text-decoration: none;">Ver todos · 14 →</a></div>
+          </div>
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>ID</th><th>Resumen</th><th>Empleado</th><th>Imp.</th><th>Estado</th><th>SLA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="location='/ticket-detail'">
+                <td class="id-cell">SM-00043</td>
+                <td class="summary">Impresora no imprime facturas · HP-LJ-204</td>
+                <td>M. Ríos · Bayamón</td>
+                <td><span class="imp imp-Alta">Alta</span></td>
+                <td><span class="stat stat-Recibido">Recibido</span></td>
+                <td class="when urg">3h 58m</td>
+              </tr>
+              <tr>
+                <td class="id-cell">SM-00041</td>
+                <td class="summary">Salesforce no carga reportes · varios usuarios</td>
+                <td>L. Soto · Mayagüez</td>
+                <td><span class="imp imp-Alta">Alta</span></td>
+                <td><span class="stat stat-Progreso">Progreso</span></td>
+                <td class="when urg">42m</td>
+              </tr>
+              <tr>
+                <td class="id-cell">SM-00040</td>
+                <td class="summary">Correo no recibe desde proveedores</td>
+                <td>R. Núñez · Caguas</td>
+                <td><span class="imp imp-Media">Media</span></td>
+                <td><span class="stat stat-Progreso">Progreso</span></td>
+                <td class="when">2h 14m</td>
+              </tr>
+              <tr>
+                <td class="id-cell">SM-00038</td>
+                <td class="summary">VPN se desconecta cada 10 min</td>
+                <td>M. Ríos · Bayamón</td>
+                <td><span class="imp imp-Media">Media</span></td>
+                <td><span class="stat stat-Progreso">Progreso</span></td>
+                <td class="when">7h 22m</td>
+              </tr>
+              <tr>
+                <td class="id-cell">SM-00035</td>
+                <td class="summary">EMAS — error al cerrar caja del día</td>
+                <td>D. Cruz · Caguas</td>
+                <td><span class="imp imp-Media">Media</span></td>
+                <td><span class="stat stat-Progreso">Progreso</span></td>
+                <td class="when">2d</td>
+              </tr>
+              <tr>
+                <td class="id-cell">SM-00029</td>
+                <td class="summary">Reset de contraseña · EMAS</td>
+                <td>M. Ríos · Bayamón</td>
+                <td><span class="imp imp-Baja">Baja</span></td>
+                <td><span class="stat stat-Resuelto">Resuelto</span></td>
+                <td class="when">5d</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Volume by hour -->
+        <div class="panel">
+          <div class="panel-h">
+            <h4>Tickets recibidos · últimas 8 horas</h4>
+            <div class="meta">turno mañana + tarde</div>
+          </div>
+          <div class="panel-b">
+            <div class="bars">
+              <div class="bar"><div class="val">2</div><div class="b" style="height: 20%;"></div><div class="lbl">07:00</div></div>
+              <div class="bar"><div class="val">3</div><div class="b" style="height: 30%;"></div><div class="lbl">08:00</div></div>
+              <div class="bar"><div class="val">5</div><div class="b" style="height: 50%;"></div><div class="lbl">09:00</div></div>
+              <div class="bar"><div class="val">7</div><div class="b" style="height: 70%;"></div><div class="lbl">10:00</div></div>
+              <div class="bar"><div class="val">4</div><div class="b" style="height: 40%;"></div><div class="lbl">11:00</div></div>
+              <div class="bar"><div class="val">2</div><div class="b" style="height: 20%;"></div><div class="lbl">12:00</div></div>
+              <div class="bar"><div class="val">3</div><div class="b" style="height: 30%;"></div><div class="lbl">13:00</div></div>
+              <div class="bar"><div class="val">8</div><div class="b t" style="height: 80%;"></div><div class="lbl">14:00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div>
+        <!-- SLA cards -->
+        <div class="sla-grid" style="margin-bottom: 14px;">
+          <div class="panel sla-card">
+            <div class="sla-num ok">3h 12m</div>
+            <div class="sla-lbl">Tiempo prom. resolución</div>
+            <div class="sla-bar"><div class="sla-bar-fill" style="width: 75%;"></div></div>
+          </div>
+          <div class="panel sla-card">
+            <div class="sla-num ok">12 min</div>
+            <div class="sla-lbl">Primera respuesta</div>
+            <div class="sla-bar"><div class="sla-bar-fill" style="width: 85%;"></div></div>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="panel">
+          <div class="panel-h">
+            <h4>Categorías · hoy</h4>
+            <div class="meta">14 tickets</div>
+          </div>
+          <div class="panel-b">
+            <div class="cat-list">
+              <div class="cat-item">
+                <div class="name">Sistemas / Apps</div>
+                <div class="bar2"><div class="bar2-fill" style="width: 50%; background: var(--tg-navy);"></div></div>
+                <div class="num">5</div>
+              </div>
+              <div class="cat-item">
+                <div class="name">Red / Internet</div>
+                <div class="bar2"><div class="bar2-fill" style="width: 35%; background: var(--tg-red);"></div></div>
+                <div class="num">4</div>
+              </div>
+              <div class="cat-item">
+                <div class="name">Hardware</div>
+                <div class="bar2"><div class="bar2-fill" style="width: 28%; background: var(--st-prog);"></div></div>
+                <div class="num">3</div>
+              </div>
+              <div class="cat-item">
+                <div class="name">Accesos / Cuentas</div>
+                <div class="bar2"><div class="bar2-fill" style="width: 14%; background: var(--st-done);"></div></div>
+                <div class="num">2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team load -->
+        <div class="panel">
+          <div class="panel-h">
+            <h4>Carga del equipo</h4>
+            <div class="meta">turno tarde · 4 técnicos</div>
+          </div>
+          <div class="panel-b" style="padding: 6px 16px 14px;">
+            <div class="team-row">
+              <div class="team-init">JM</div>
+              <div><div class="team-name">J. Marrero <span class="team-role">· tú</span></div></div>
+              <div class="team-load"><div class="team-bar"><div class="team-bar-fill" style="width: 80%;"></div></div><div class="n">4</div></div>
+            </div>
+            <div class="team-row">
+              <div class="team-init" style="background: var(--tg-navy);">CR</div>
+              <div><div class="team-name">C. Rivera <span class="team-role">· redes</span></div></div>
+              <div class="team-load"><div class="team-bar"><div class="team-bar-fill" style="width: 60%; background: var(--st-prog);"></div></div><div class="n">3</div></div>
+            </div>
+            <div class="team-row">
+              <div class="team-init" style="background: var(--tg-navy);">AT</div>
+              <div><div class="team-name">A. Torres <span class="team-role">· apps</span></div></div>
+              <div class="team-load"><div class="team-bar"><div class="team-bar-fill" style="width: 100%; background: var(--tg-red);"></div></div><div class="n">5</div></div>
+            </div>
+            <div class="team-row">
+              <div class="team-init" style="background: #8B5CF6;">PG</div>
+              <div><div class="team-name">P. Gómez <span class="team-role">· hardware</span></div></div>
+              <div class="team-load"><div class="team-bar"><div class="team-bar-fill" style="width: 40%; background: var(--st-done);"></div></div><div class="n">2</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="panel">
+          <div class="panel-h">
+            <h4>Actividad reciente</h4>
+            <div class="meta">en vivo</div>
+          </div>
+          <div class="panel-b" style="padding: 6px 16px 14px;">
+            <div class="feed">
+              <div class="feed-row">
+                <div class="feed-time">14:35</div>
+                <div class="feed-text"><b>Sistema</b> aplicó SLA <span class="tag imp-Alta">Alta</span> a <span class="id">SM-00043</span></div>
+              </div>
+              <div class="feed-row">
+                <div class="feed-time">14:34</div>
+                <div class="feed-text"><b>J. Marrero</b> respondió a <span class="id">SM-00043</span></div>
+              </div>
+              <div class="feed-row">
+                <div class="feed-time">14:21</div>
+                <div class="feed-text"><b>A. Torres</b> resolvió <span class="id">SM-00040</span> · Salesforce</div>
+              </div>
+              <div class="feed-row">
+                <div class="feed-time">14:08</div>
+                <div class="feed-text"><b>C. Rivera</b> escaló <span class="id">SM-00031</span> a redes ISP</div>
+              </div>
+              <div class="feed-row">
+                <div class="feed-time">13:52</div>
+                <div class="feed-text"><b>Empleado</b> abrió <span class="id">SM-00042</span> · Teams no abre</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="live"><b>CONECTADO</b></span>
+    <span><b>BASE</b> tropigas_pr_v3</span>
+    <span><b>USR</b> j.marrero · UCG IT</span>
+    <span><b>VISTA</b> dashboard</span>
+    <span class="right"><b>REL</b> 1.1.0 · sync hace 1s</span>
+  </div>
+</div>
+
+</body>
+</html>

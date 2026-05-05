@@ -281,6 +281,57 @@
     '.user-dropdown .links .divider{height:1px;background:#F3F4F6;margin:6px 0}',
     '.user-dropdown .links a.danger{color:#9F1239}',
     '.user-dropdown .links a.danger:hover{background:#FCE4E6}',
+    /* notifications bell */
+    '.notif-wrap{position:fixed;top:12px;right:220px;z-index:9998;',
+    'font-family:Inter,system-ui,sans-serif}',
+    '.notif-bell{width:38px;height:38px;background:#fff;border:1px solid #E5E7EB;',
+    'border-radius:4px;display:flex;align-items:center;justify-content:center;',
+    'cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.08);position:relative;',
+    'font-size:16px;color:#1F2937}',
+    '.notif-bell:hover{background:#F4F5F7}',
+    '.notif-bell .badge{position:absolute;top:-4px;right:-4px;background:#E30512;',
+    'color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:10px;',
+    'font-family:JetBrains Mono,monospace;min-width:8px;text-align:center;',
+    'border:2px solid #fff;line-height:1}',
+    '.notif-dropdown{position:absolute;top:calc(100% + 6px);right:0;width:380px;',
+    'max-height:480px;overflow-y:auto;background:#fff;border:1px solid #E5E7EB;',
+    'border-radius:4px;box-shadow:0 10px 24px rgba(15,23,42,.15);display:none}',
+    '.notif-dropdown.open{display:block}',
+    '.notif-head{display:flex;justify-content:space-between;align-items:baseline;',
+    'padding:12px 14px;border-bottom:1px solid #F3F4F6;position:sticky;top:0;background:#fff}',
+    '.notif-head h4{font-size:11px;font-weight:600;letter-spacing:.10em;',
+    'text-transform:uppercase;color:#1C2F5C;margin:0}',
+    '.notif-head .clear{font-size:10px;color:#6B7280;cursor:pointer;text-decoration:none;',
+    'font-family:JetBrains Mono,monospace;letter-spacing:.04em;text-transform:uppercase}',
+    '.notif-head .clear:hover{color:#E30512}',
+    '.notif-list{padding:4px 0}',
+    '.notif-item{display:flex;gap:10px;padding:10px 14px;cursor:pointer;',
+    'border-left:3px solid transparent;text-decoration:none;color:inherit}',
+    '.notif-item.unread{background:rgba(28,47,92,.03);border-left-color:#E30512}',
+    '.notif-item:hover{background:#F4F5F7}',
+    '.notif-item .ico{width:30px;height:30px;flex-shrink:0;border-radius:3px;',
+    'display:grid;place-items:center;font-family:JetBrains Mono,monospace;',
+    'font-size:10px;font-weight:700;color:#fff;letter-spacing:.04em}',
+    '.notif-item.t-new .ico{background:#1C2F5C}',
+    '.notif-item.t-comment .ico{background:#F59E0B}',
+    '.notif-item.t-resolved .ico{background:#10B981}',
+    '.notif-item.t-sla .ico{background:#E30512}',
+    '.notif-item.t-assigned .ico{background:#3B82F6}',
+    '.notif-item .body{flex:1;min-width:0}',
+    '.notif-item .body .top{display:flex;justify-content:space-between;font-size:10px;',
+    'color:#9CA3AF;font-family:JetBrains Mono,monospace;margin-bottom:2px;',
+    'letter-spacing:.04em}',
+    '.notif-item .body .ttl{font-size:13px;color:#0F172A;font-weight:500;',
+    'margin-bottom:2px;line-height:1.4}',
+    '.notif-item .body .desc{font-size:11px;color:#6B7280;line-height:1.4;',
+    'overflow:hidden;text-overflow:ellipsis;display:-webkit-box;',
+    '-webkit-line-clamp:2;-webkit-box-orient:vertical}',
+    '.notif-empty{padding:32px 16px;text-align:center;font-size:12px;color:#6B7280}',
+    '.notif-foot{border-top:1px solid #F3F4F6;padding:10px 14px;text-align:center;',
+    'position:sticky;bottom:0;background:#fff}',
+    '.notif-foot a{font-size:11px;color:#1C2F5C;text-decoration:none;font-weight:600;',
+    'letter-spacing:.04em}',
+    '.notif-foot a:hover{color:#E30512}',
     /* hide in-page user widget on IT pages — replaced by floating menu */
     '.top-user{display:none !important}',
     /* search bar (floating top-center) */
@@ -607,10 +658,208 @@
     });
   }
 
+  // ---------- Notifications bell ----------
+  function fmtNotifAge(ms) {
+    var m = Math.floor(ms / 60000);
+    if (m < 1) return 'ahora';
+    if (m < 60) return m + 'm';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + 'h';
+    return Math.floor(h / 24) + 'd';
+  }
+
+  function buildNotifs(tickets, role, me) {
+    var notifs = [];
+    if (role === 'admin' && me && me.id) {
+      tickets.filter(function (t) { return t.empleadoId === me.id; }).forEach(function (t) {
+        if (t.comments && t.comments.length) {
+          for (var i = t.comments.length - 1; i >= 0; i--) {
+            var c = t.comments[i];
+            if (c.role === 'it' && c.type === 'message') {
+              notifs.push({ type: 'comment', ticketId: t.id, title: c.author + ' respondió a tu ticket',
+                desc: c.body.slice(0, 100) + (c.body.length > 100 ? '…' : ''), createdAt: c.createdAt });
+              break;
+            }
+          }
+        }
+        if (t.status === 'Resuelto' && (Date.now() - new Date(t.updatedAt).getTime()) < 7 * 24 * 3600000) {
+          notifs.push({ type: 'resolved', ticketId: t.id, title: 'Tu ticket fue resuelto',
+            desc: t.summary, createdAt: t.updatedAt });
+        }
+        if (t.assigneeId && t.status !== 'Resuelto' && t.status !== 'Cerrado') {
+          var assignedSys = (t.comments || []).find(function (c) {
+            return c.role === 'system' && (c.body.indexOf('asignado') > -1 || c.body.indexOf('asignó') > -1);
+          });
+          if (assignedSys && (Date.now() - new Date(assignedSys.createdAt).getTime()) < 3 * 24 * 3600000) {
+            notifs.push({ type: 'assigned', ticketId: t.id, title: 'Ticket asignado',
+              desc: 'Asignado a ' + (t.assigneeName || 'IT'), createdAt: assignedSys.createdAt });
+          }
+        }
+      });
+    } else {
+      tickets.forEach(function (t) {
+        if (!t.assigneeId && t.status === 'Recibido') {
+          notifs.push({ type: 'new', ticketId: t.id, title: 'Nuevo ticket sin asignar',
+            desc: t.summary + ' · ' + (t.empleadoName || ''), createdAt: t.createdAt });
+        }
+        if (t.comments && t.comments.length) {
+          var latest = t.comments[t.comments.length - 1];
+          if (latest.role === 'empleado' && (Date.now() - new Date(latest.createdAt).getTime()) < 24 * 3600000) {
+            notifs.push({ type: 'comment', ticketId: t.id, title: latest.author + ' respondió',
+              desc: latest.body.slice(0, 100) + (latest.body.length > 100 ? '…' : ''), createdAt: latest.createdAt });
+          }
+        }
+        var ageH = (Date.now() - new Date(t.createdAt).getTime()) / 3600000;
+        if (ageH > t.slaHours * 0.75 && t.status !== 'Resuelto' && t.status !== 'Cerrado') {
+          notifs.push({ type: 'sla', ticketId: t.id, title: 'SLA en riesgo',
+            desc: t.id + ' · ' + t.summary, createdAt: new Date(Date.now() - 5 * 60000).toISOString() });
+        }
+      });
+    }
+    notifs.sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+    return notifs.slice(0, 10);
+  }
+
+  function renderNotifBell() {
+    if (here === '/') return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'notif-wrap';
+
+    var bell = document.createElement('button');
+    bell.type = 'button';
+    bell.className = 'notif-bell';
+    bell.setAttribute('aria-label', 'Notificaciones');
+    bell.textContent = '🔔';
+
+    var badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.style.display = 'none';
+    bell.appendChild(badge);
+    wrap.appendChild(bell);
+
+    var dropdown = document.createElement('div');
+    dropdown.className = 'notif-dropdown';
+
+    var head = document.createElement('div');
+    head.className = 'notif-head';
+    var h4 = document.createElement('h4');
+    h4.textContent = 'Notificaciones';
+    head.appendChild(h4);
+    var clearLink = document.createElement('a');
+    clearLink.className = 'clear';
+    clearLink.href = '#';
+    clearLink.textContent = 'Limpiar';
+    head.appendChild(clearLink);
+    dropdown.appendChild(head);
+
+    var list = document.createElement('div');
+    list.className = 'notif-list';
+    dropdown.appendChild(list);
+
+    var foot = document.createElement('div');
+    foot.className = 'notif-foot';
+    var allLink = document.createElement('a');
+    allLink.href = (getRole() === 'admin') ? '/tickets' : '/dashboard';
+    allLink.textContent = 'Ver todos los tickets →';
+    foot.appendChild(allLink);
+    dropdown.appendChild(foot);
+
+    wrap.appendChild(dropdown);
+    document.body.appendChild(wrap);
+
+    var lastNotifs = [];
+
+    async function loadNotifs() {
+      if (!window.tg) return;
+      try {
+        var tickets = await window.tg.tickets();
+        if (!Array.isArray(tickets)) return;
+        var role = getRole();
+        var me = getCurrentUser();
+        lastNotifs = buildNotifs(tickets, role, me);
+
+        if (lastNotifs.length > 0) {
+          badge.style.display = '';
+          badge.textContent = lastNotifs.length > 9 ? '9+' : lastNotifs.length;
+        } else {
+          badge.style.display = 'none';
+        }
+
+        while (list.firstChild) list.removeChild(list.firstChild);
+        if (lastNotifs.length === 0) {
+          var empty = document.createElement('div');
+          empty.className = 'notif-empty';
+          empty.textContent = 'Sin notificaciones nuevas.';
+          list.appendChild(empty);
+          return;
+        }
+        lastNotifs.forEach(function (n) {
+          var item = document.createElement('a');
+          item.className = 'notif-item unread t-' + n.type;
+          item.href = '/ticket-detail?id=' + n.ticketId;
+
+          var ico = document.createElement('div');
+          ico.className = 'ico';
+          var icoText = ({ 'new': 'NEW', 'comment': 'MSG', 'resolved': '✓', 'sla': '!', 'assigned': '→' })[n.type] || '•';
+          ico.textContent = icoText;
+          item.appendChild(ico);
+
+          var body = document.createElement('div');
+          body.className = 'body';
+          var top = document.createElement('div');
+          top.className = 'top';
+          var idEl = document.createElement('span');
+          idEl.textContent = n.ticketId;
+          var when = document.createElement('span');
+          when.textContent = fmtNotifAge(Date.now() - new Date(n.createdAt).getTime());
+          top.appendChild(idEl);
+          top.appendChild(when);
+          body.appendChild(top);
+          var ttl = document.createElement('div');
+          ttl.className = 'ttl';
+          ttl.textContent = n.title;
+          body.appendChild(ttl);
+          if (n.desc) {
+            var desc = document.createElement('div');
+            desc.className = 'desc';
+            desc.textContent = n.desc;
+            body.appendChild(desc);
+          }
+          item.appendChild(body);
+          list.appendChild(item);
+        });
+      } catch (e) { /* silent */ }
+    }
+
+    bell.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = !dropdown.classList.contains('open');
+      dropdown.classList.toggle('open');
+      if (willOpen) loadNotifs();
+    });
+    document.addEventListener('click', function (e) {
+      if (!wrap.contains(e.target)) dropdown.classList.remove('open');
+    });
+    clearLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      while (list.firstChild) list.removeChild(list.firstChild);
+      var empty = document.createElement('div');
+      empty.className = 'notif-empty';
+      empty.textContent = 'Sin notificaciones nuevas.';
+      list.appendChild(empty);
+      badge.style.display = 'none';
+    });
+
+    loadNotifs();
+  }
+
   function boot() {
     // renderDevNav() retired — production-style nav now drives navigation
     renderUserMenu();
     renderSearchBar();
+    renderNotifBell();
     wireAll();
   }
 

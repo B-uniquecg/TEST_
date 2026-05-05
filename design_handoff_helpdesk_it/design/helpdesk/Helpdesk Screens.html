@@ -577,10 +577,20 @@
           <div id="save-banner" class="save-banner">
             <span>Tu ticket fue enviado a <b>UCG · Mesa de Ayuda IT</b>. Recibirás actualizaciones por correo y aquí.</span>
             <span class="id-chip" id="new-ticket-id">SM-00043</span>
-            <button onclick="location='/dashboard'">Ver cómo lo trabaja IT →</button>
           </div>
 
-          <div class="emp-form">
+          <div id="post-submit-actions" style="display:none;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:14px 18px;margin-bottom:16px;display:none;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="font-size:12px;color:var(--ink-4);">
+              Tu reporte está bloqueado para evitar cambios accidentales. Para continuar, escoge una opción:
+            </div>
+            <div style="display:flex;gap:8px;">
+              <a href="/dashboard" class="btn">← Volver al Dashboard</a>
+              <a href="/tickets" class="btn">Ver mis tickets</a>
+              <button type="button" class="btn primary" id="btn-create-another">Crear otro ticket</button>
+            </div>
+          </div>
+
+          <div class="emp-form" id="emp-form">
             <div class="emp-form-h">
               <h2>Nuevo reporte</h2>
               <div class="step">paso 1 de 1 · se guarda automáticamente</div>
@@ -785,13 +795,13 @@
               </div>
             </div>
 
-            <div class="emp-foot-actions">
+            <div class="emp-foot-actions" id="emp-foot-actions">
               <div class="info">
                 Al enviar, recibirás un <b>número de ticket</b> por correo y podrás seguirlo desde <b>Mis Tickets</b>.
               </div>
               <div style="display: flex; gap: 8px;">
-                <button class="btn">Cancelar</button>
-                <button class="btn primary" onclick="saveTicket()">Enviar a IT</button>
+                <button class="btn" id="btn-cancel" type="button">Cancelar</button>
+                <button class="btn primary" id="btn-submit" type="button" onclick="saveTicket()">Enviar a IT</button>
               </div>
             </div>
           </div>
@@ -1223,8 +1233,59 @@
     while (node.firstChild) node.removeChild(node.firstChild);
   }
 
+  function lockForm() {
+    var form = document.getElementById('emp-form');
+    if (!form) return;
+    form.querySelectorAll('input, textarea, select, button').forEach(function (el) {
+      el.disabled = true;
+    });
+    form.querySelectorAll('label').forEach(function (l) {
+      l.style.cursor = 'default';
+      l.style.pointerEvents = 'none';
+    });
+    form.style.opacity = '0.7';
+    var foot = document.getElementById('emp-foot-actions');
+    if (foot) foot.style.display = 'none';
+    var post = document.getElementById('post-submit-actions');
+    if (post) post.style.display = 'flex';
+  }
+
+  function unlockForm() {
+    var form = document.getElementById('emp-form');
+    if (!form) return;
+    form.querySelectorAll('input, textarea, select, button').forEach(function (el) {
+      el.disabled = false;
+    });
+    form.querySelectorAll('label').forEach(function (l) {
+      l.style.cursor = '';
+      l.style.pointerEvents = '';
+    });
+    form.style.opacity = '';
+    var foot = document.getElementById('emp-foot-actions');
+    if (foot) foot.style.display = '';
+    var post = document.getElementById('post-submit-actions');
+    if (post) post.style.display = 'none';
+    var banner = document.getElementById('save-banner');
+    if (banner) banner.classList.remove('on');
+  }
+
+  function resetFormFields() {
+    var ids = ['emp-summary', 'emp-description', 'emp-emas', 'emp-sf-tx',
+               'emp-cuenta', 'emp-cliente-nombre', 'emp-cliente-tel', 'emp-error-msg'];
+    ids.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+    var firstCat = document.querySelector('input[name="cat"]');
+    if (firstCat) firstCat.checked = true;
+    var firstImp = document.querySelector('input[name="imp"]');
+    if (firstImp) firstImp.checked = true;
+  }
+
   async function saveTicket() {
-    var btn = document.querySelector('button.btn.primary[onclick^="saveTicket"]');
+    var btn = document.getElementById('btn-submit');
     if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
     try {
       var summary = document.getElementById('emp-summary').value.trim();
@@ -1263,10 +1324,10 @@
       document.getElementById('new-ticket-id').textContent = ticket.id;
       document.getElementById('save-banner').classList.add('on');
       document.getElementById('save-banner').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      lockForm();
       await renderMisTickets();
     } catch (e) {
       alert('No se pudo crear el ticket. Intenta de nuevo.');
-    } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Enviar a IT'; }
     }
   }
@@ -1333,10 +1394,39 @@
   var empScreen = document.getElementById('screen-emp');
   if (empScreen) empScreen.classList.add('on');
 
+  function wirePostSubmitButtons() {
+    var cancelBtn = document.getElementById('btn-cancel');
+    if (cancelBtn && !cancelBtn.dataset.wired) {
+      cancelBtn.dataset.wired = '1';
+      cancelBtn.addEventListener('click', function () {
+        if (history.length > 1 && document.referrer && document.referrer.indexOf(location.origin) === 0) {
+          history.back();
+        } else {
+          location.href = '/dashboard';
+        }
+      });
+    }
+    var createAnother = document.getElementById('btn-create-another');
+    if (createAnother && !createAnother.dataset.wired) {
+      createAnother.dataset.wired = '1';
+      createAnother.addEventListener('click', function () {
+        resetFormFields();
+        unlockForm();
+        var hero = document.querySelector('.emp-form-h');
+        if (hero) hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }
+
   if (window.tg) {
     renderMisTickets();
   } else {
     document.addEventListener('DOMContentLoaded', renderMisTickets);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wirePostSubmitButtons);
+  } else {
+    wirePostSubmitButtons();
   }
 </script>
 

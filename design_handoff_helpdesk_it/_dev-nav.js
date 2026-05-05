@@ -199,18 +199,6 @@
     var spacer = document.createElement('div');
     spacer.className = 'it-tabs-spacer';
     itTabs.appendChild(spacer);
-
-    var newBtn = document.createElement('a');
-    newBtn.href = '/portal';
-    newBtn.className = 'it-tab';
-    newBtn.style.cssText = 'background:var(--tg-red);color:#fff;font-weight:700;';
-    var plus = document.createElement('span');
-    plus.className = 'tab-num';
-    plus.style.color = '#fff';
-    plus.textContent = '+';
-    newBtn.appendChild(plus);
-    newBtn.appendChild(document.createTextNode('Reportar nueva situación'));
-    itTabs.appendChild(newBtn);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', injectAdminTabs);

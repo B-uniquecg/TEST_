@@ -98,6 +98,9 @@ app.post('/api/tickets', (req, res) => {
     createdAt: now,
     updatedAt: now,
     comments: [],
+    cliente: body.cliente && typeof body.cliente === 'object' ? body.cliente : null,
+    salesforceTxIds: Array.isArray(body.salesforceTxIds) ? body.salesforceTxIds.slice(0, 20) : [],
+    errorMessage: body.errorMessage ? String(body.errorMessage).slice(0, 4000) : null,
   };
   state.tickets.unshift(t);
   res.status(201).json(denormalizeTicket(t));
@@ -107,7 +110,7 @@ app.patch('/api/tickets/:id', (req, res) => {
   const t = state.tickets.find((t) => t.id === req.params.id);
   if (!t) return res.status(404).json({ error: 'ticket not found' });
   const body = req.body || {};
-  const allowed = ['summary', 'description', 'categoria', 'importance', 'status', 'assigneeId', 'tags', 'assetId'];
+  const allowed = ['summary', 'description', 'categoria', 'importance', 'status', 'assigneeId', 'tags', 'assetId', 'cliente', 'salesforceTxIds', 'errorMessage'];
   allowed.forEach((k) => {
     if (k in body) t[k] = body[k];
   });

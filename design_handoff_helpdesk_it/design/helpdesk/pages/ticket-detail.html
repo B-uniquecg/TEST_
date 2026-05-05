@@ -668,6 +668,131 @@ function showTab(id, btn) {
     var p = new URLSearchParams(location.search);
     return p.get('id') || 'SM-00043';
   }
+  function getRole() {
+    try { return localStorage.getItem('tg-role') || 'admin'; } catch (e) { return 'admin'; }
+  }
+
+  function renderClienteRail(t) {
+    var rail = document.querySelector('.col-rail');
+    if (!rail) return;
+    var existing = rail.querySelector('.cliente-block');
+    if (existing) existing.parentNode.removeChild(existing);
+    var existingErr = rail.querySelector('.error-block');
+    if (existingErr) existingErr.parentNode.removeChild(existingErr);
+    if (!t.cliente && !t.errorMessage) return;
+
+    var insertBefore = rail.children[2] || null; // after SLA + Asignado, before Empleado
+
+    if (t.cliente) {
+      var block = document.createElement('div');
+      block.className = 'rail-block cliente-block';
+      var h = document.createElement('div');
+      h.className = 'rail-h';
+      var hh = document.createElement('h4');
+      hh.textContent = 'Cliente afectado';
+      h.appendChild(hh);
+      var ed = document.createElement('div');
+      ed.className = 'ed';
+      ed.textContent = t.cliente.accountType || '';
+      h.appendChild(ed);
+      block.appendChild(h);
+      var b = document.createElement('div');
+      b.className = 'rail-b';
+      function kv(k, v) {
+        if (!v) return;
+        var d = document.createElement('div');
+        d.className = 'kv';
+        var dk = document.createElement('div');
+        dk.className = 'k';
+        dk.textContent = k;
+        var dv = document.createElement('div');
+        dv.className = 'v';
+        if (k === 'EMAS #' || k === 'Salesforce ID') dv.classList.add('mono');
+        dv.textContent = v;
+        d.appendChild(dk);
+        d.appendChild(dv);
+        b.appendChild(d);
+      }
+      kv('Nombre', t.cliente.name);
+      kv('EMAS #', t.cliente.emasNumber || '— (no existe en EMAS)');
+      kv('Salesforce ID', t.cliente.salesforceId);
+      kv('Contacto', t.cliente.contactName);
+      kv('Teléfono', t.cliente.phone);
+      kv('Email', t.cliente.email);
+      kv('Ship-To', t.cliente.shipTo);
+      kv('Postal', t.cliente.mailingAddress);
+      if (Array.isArray(t.salesforceTxIds) && t.salesforceTxIds.length) {
+        kv('SF Tx#', t.salesforceTxIds.join(', '));
+      }
+      if (t.recurrenceCount && t.recurrenceCount > 1) {
+        kv('Ocurrencias', t.recurrenceCount + ' veces');
+      }
+      block.appendChild(b);
+      rail.insertBefore(block, insertBefore);
+    }
+
+    if (t.errorMessage) {
+      var errBlock = document.createElement('div');
+      errBlock.className = 'rail-block error-block';
+      errBlock.style.borderLeft = '3px solid var(--tg-red)';
+      var eh = document.createElement('div');
+      eh.className = 'rail-h';
+      var ehh = document.createElement('h4');
+      ehh.textContent = 'Error de interfaz';
+      eh.appendChild(ehh);
+      errBlock.appendChild(eh);
+      var eb = document.createElement('div');
+      eb.className = 'rail-b';
+      var pre = document.createElement('div');
+      pre.style.cssText = 'font-family:var(--font-mono);font-size:10.5px;line-height:1.5;color:var(--ink-2);background:var(--paper-2);padding:10px;border-radius:3px;white-space:pre-wrap;word-break:break-word;';
+      pre.textContent = t.errorMessage;
+      eb.appendChild(pre);
+      errBlock.appendChild(eb);
+      rail.insertBefore(errBlock, insertBefore);
+    }
+  }
+
+  function applyRoleGating(t) {
+    var role = getRole();
+    var isAdmin = role === 'admin';
+
+    // Banner action buttons: hide IT-only when admin
+    var bannerBtns = document.querySelectorAll('.tk-banner .btn');
+    bannerBtns.forEach(function (btn) {
+      var label = btn.textContent.trim();
+      var itOnly = ['Posponer', 'Reasignar', 'Marcar Resuelto'];
+      if (isAdmin && itOnly.some(function (l) { return label.indexOf(l) > -1; })) {
+        btn.style.display = 'none';
+      } else {
+        btn.style.display = '';
+      }
+    });
+
+    // Composer: restrict modes for admin
+    var composer = document.querySelector('.composer');
+    if (composer) {
+      var modes = composer.querySelectorAll('.mode');
+      var resolveBtn = composer.querySelector('.actions button.btn:not(.primary)');
+      var sendBtn = composer.querySelector('.actions button.btn.primary');
+      if (isAdmin) {
+        modes.forEach(function (m, i) {
+          if (i === 0) {
+            m.classList.add('on');
+            var firstM = m;
+            firstM.style.display = '';
+            firstM.textContent = 'Mensaje a UCG IT';
+          } else {
+            m.style.display = 'none';
+          }
+        });
+        if (resolveBtn) resolveBtn.style.display = 'none';
+        if (sendBtn) sendBtn.textContent = 'Enviar mensaje';
+      } else {
+        modes.forEach(function (m) { m.style.display = ''; });
+        if (resolveBtn) resolveBtn.style.display = '';
+      }
+    }
+  }
 
   function showError(msg) {
     var banner = document.querySelector('.tk-banner');
@@ -890,6 +1015,12 @@ function showTab(id, btn) {
         });
       }
     });
+
+    // Cliente afectado rail block (when ticket has cliente or errorMessage)
+    renderClienteRail(t);
+
+    // Role-based UI gating (admin sees read-only)
+    applyRoleGating(t);
   }
 
   if (document.readyState === 'loading') {

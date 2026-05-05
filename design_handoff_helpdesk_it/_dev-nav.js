@@ -143,7 +143,7 @@
   window.__tgLogout = logout;
 
   // ---------- Dev nav (bottom-center prototype switcher) ----------
-  var pages = [
+  var pagesIT = [
     { href: '/',              label: 'Login' },
     { href: '/portal',        label: 'Empleado' },
     { href: '/dashboard',     label: 'Dashboard' },
@@ -154,8 +154,23 @@
     { href: '/reportes',      label: 'Reportes' },
     { href: '/settings',      label: 'Settings' },
   ];
+  var pagesAdmin = [
+    { href: '/',              label: 'Login' },
+    { href: '/portal',        label: 'Mi Portal' },
+    { href: '/dashboard',     label: 'Mi Dashboard' },
+    { href: '/ticket-detail', label: 'Mi Ticket' },
+    { href: '/settings',      label: 'Settings' },
+  ];
+  var pages = (getRole() === 'admin') ? pagesAdmin : pagesIT;
+  var itOnlyRoutes = ['/tickets', '/asignar', '/kb', '/reportes'];
 
   var here = (location.pathname.replace(/\/+$/, '') || '/');
+
+  // Role-based redirect: admin should not access IT-only routes
+  if (getRole() === 'admin' && itOnlyRoutes.indexOf(here) > -1) {
+    location.replace('/portal');
+    return;
+  }
 
   var style = document.createElement('style');
   style.textContent = [

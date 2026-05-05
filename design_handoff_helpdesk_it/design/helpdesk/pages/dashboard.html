@@ -480,6 +480,39 @@
     if (!stats.byStatus) stats.byStatus = {};
     if (!Array.isArray(stats.techLoad)) stats.techLoad = [];
 
+    // Role filter — admin sees only their own tickets
+    var role = (function () { try { return localStorage.getItem('tg-role') || 'admin'; } catch (e) { return 'admin'; } })();
+    var me = window.__tgGetCurrentUser ? window.__tgGetCurrentUser() : null;
+    var isAdmin = role === 'admin';
+    if (isAdmin && me && me.id) {
+      tickets = tickets.filter(function (t) { return t.empleadoId === me.id; });
+      stats = {
+        total: tickets.length,
+        byStatus: tickets.reduce(function (acc, t) { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {}),
+        unassigned: tickets.filter(function (t) { return !t.assigneeId; }).length,
+        overdueAlta: 0,
+        resolvedToday: tickets.filter(function (t) {
+          var u = new Date(t.updatedAt).getTime();
+          return (t.status === 'Resuelto' || t.status === 'Cerrado') && (Date.now() - u < 24 * 3600 * 1000);
+        }).length,
+        techLoad: [],
+      };
+    }
+
+    // Page title for admin
+    var pageH = document.querySelector('.page-h h1');
+    if (pageH && isAdmin && me) {
+      pageH.textContent = 'Hola, ' + me.name.split(' ').pop() + '.';
+    }
+    var pageHSub = document.querySelector('.page-h .sub');
+    if (pageHSub && isAdmin) {
+      pageHSub.textContent = 'Resumen de tus tickets reportados a UCG IT.';
+    }
+    var pageActions = document.querySelector('.page-h .actions');
+    if (pageActions && isAdmin) {
+      pageActions.style.display = 'none';
+    }
+
     // KPIs
     var todayMs = 24 * 3600 * 1000;
     var newToday = tickets.filter(function (t) { return Date.now() - new Date(t.createdAt).getTime() < todayMs; }).length;
@@ -490,12 +523,26 @@
     var slaOk = tickets.length ? Math.round(((tickets.length - stats.overdueAlta) / tickets.length) * 100) : 100;
 
     var setText = function (id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
-    setText('kpi-recibidos', pad(newToday));
-    setText('kpi-recibidos-sub', stats.unassigned + ' sin asignar');
+
+    // Re-label KPIs for admin
+    var kpiLabels = isAdmin
+      ? ['Mis tickets', 'En proceso', 'Resueltos', 'SLA cumplido', 'Alta importancia']
+      : ['Recibidos · hoy', 'En progreso', 'Resueltos · hoy', 'SLA cumplido', 'Alta importancia'];
+    var kpiCards = document.querySelectorAll('.kpi-row .kpi-k');
+    kpiCards.forEach(function (el, i) { if (kpiLabels[i]) el.textContent = kpiLabels[i]; });
+
+    setText('kpi-recibidos', pad(isAdmin ? tickets.length : newToday));
+    setText('kpi-recibidos-sub', isAdmin
+      ? (stats.byStatus['Recibido'] || 0) + ' nuevos · ' + (stats.byStatus['En progreso'] || 0) + ' en proceso'
+      : stats.unassigned + ' sin asignar');
     setText('kpi-progreso', pad(inProgress));
-    setText('kpi-progreso-sub', altaOpen + ' alta · ' + stats.unassigned + ' sin asignar');
+    setText('kpi-progreso-sub', isAdmin
+      ? (altaOpen + ' alta importancia')
+      : (altaOpen + ' alta · ' + stats.unassigned + ' sin asignar'));
     setText('kpi-resueltos', pad(resolvedToday));
-    setText('kpi-resueltos-sub', resolved + ' totales históricos');
+    setText('kpi-resueltos-sub', isAdmin
+      ? resolved + ' resueltos en total'
+      : resolved + ' totales históricos');
     var slaEl = document.getElementById('kpi-sla');
     if (slaEl) {
       clearChildren(slaEl);

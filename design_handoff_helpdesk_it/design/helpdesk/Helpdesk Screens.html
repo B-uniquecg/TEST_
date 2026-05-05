@@ -720,10 +720,49 @@
               </div>
             </div>
 
-            <!-- Section 4 — importancia -->
+            <!-- Section 4 — Cliente afectado (si aplica) -->
             <div class="emp-section">
               <div class="h">
                 <span class="num">[04]</span>
+                <span class="t">¿Hay un cliente afectado? <span style="color: var(--ink-4); font-weight: 400; font-size: 12px;">(si aplica)</span></span>
+                <span class="sub">Llena esto si el problema afecta a un cliente específico — útil para errores de Salesforce↔EMAS</span>
+              </div>
+              <div class="emp-grid">
+                <div class="emp-fld s4">
+                  <label class="fl">EMAS Customer #</label>
+                  <input type="text" id="emp-emas" placeholder="Ej. RO4822" />
+                </div>
+                <div class="emp-fld s4">
+                  <label class="fl">Salesforce Tx#</label>
+                  <input type="text" id="emp-sf-tx" placeholder="Ej. 3729" />
+                </div>
+                <div class="emp-fld s4">
+                  <label class="fl">Tipo de cuenta</label>
+                  <select id="emp-cuenta">
+                    <option value="">— Selecciona —</option>
+                    <option value="Comercial">Comercial</option>
+                    <option value="Individual">Individual</option>
+                  </select>
+                </div>
+                <div class="emp-fld s6">
+                  <label class="fl">Nombre del cliente</label>
+                  <input type="text" id="emp-cliente-nombre" placeholder="Nombre del negocio o cliente" />
+                </div>
+                <div class="emp-fld s6">
+                  <label class="fl">Teléfono</label>
+                  <input type="text" id="emp-cliente-tel" placeholder="787-555-0000" />
+                </div>
+                <div class="emp-fld s12">
+                  <label class="fl">Mensaje de error completo <span style="color: var(--ink-4); font-weight: 400;">(copia/pega del log)</span></label>
+                  <textarea id="emp-error-msg" placeholder='Ej. ERROR: *** Salesforce Customer ID and EMAS Customer Number Do Not Match' style="font-family: var(--font-mono); font-size: 11px; min-height: 80px;"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 5 — importancia -->
+            <div class="emp-section">
+              <div class="h">
+                <span class="num">[05]</span>
                 <span class="t">¿Qué tan urgente es?</span>
                 <span class="sub">UCG puede ajustarlo</span>
               </div>
@@ -1190,14 +1229,34 @@
       var cat = document.querySelector('input[name="cat"]:checked');
       var imp = document.querySelector('input[name="imp"]:checked');
       var me = (window.__tgGetCurrentUser && window.__tgGetCurrentUser()) || { id: 'EMP-2104' };
-      var ticket = await window.tg.createTicket({
+
+      var emas = (document.getElementById('emp-emas') || {}).value || '';
+      var sfTx = (document.getElementById('emp-sf-tx') || {}).value || '';
+      var cuenta = (document.getElementById('emp-cuenta') || {}).value || '';
+      var clienteName = (document.getElementById('emp-cliente-nombre') || {}).value || '';
+      var clienteTel = (document.getElementById('emp-cliente-tel') || {}).value || '';
+      var errorMsg = (document.getElementById('emp-error-msg') || {}).value || '';
+
+      var payload = {
         summary: summary || 'Reporte sin resumen',
         description: description,
         empleadoId: me.id,
         categoria: cat ? cat.value : 'Sistema',
         importance: imp ? imp.value : 'Media',
-        assetId: 'HP-LJ-204',
-      });
+        assetId: null,
+      };
+      if (emas.trim() || clienteName.trim()) {
+        payload.cliente = {
+          emasNumber: emas.trim() || null,
+          accountType: cuenta || null,
+          name: clienteName.trim() || null,
+          phone: clienteTel.trim() || null,
+        };
+      }
+      if (sfTx.trim()) payload.salesforceTxIds = sfTx.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      if (errorMsg.trim()) payload.errorMessage = errorMsg.trim();
+
+      var ticket = await window.tg.createTicket(payload);
       document.getElementById('new-ticket-id').textContent = ticket.id;
       document.getElementById('save-banner').classList.add('on');
       document.getElementById('save-banner').scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -1322,10 +1322,13 @@
     row.classList.add('sel');
   }
 
-  try {
-    const p = localStorage.getItem('tg_persona');
-    if (p === 'it' || p === 'emp') show(p);
-  } catch (e) {}
+  // Persona toggle is retired — /portal is always the empleado view.
+  // Wipe any stale persona flag so old IT-embedded view doesn't restore,
+  // and force the empleado screen to be the visible one.
+  try { localStorage.removeItem('tg_persona'); } catch (e) {}
+  document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('on'); });
+  var empScreen = document.getElementById('screen-emp');
+  if (empScreen) empScreen.classList.add('on');
 
   if (window.tg) {
     renderMisTickets();

@@ -49,9 +49,51 @@
     document.body.appendChild(nav);
   }
 
+  // Auto-wire prototype navigation: any element matching one of these
+  // selectors becomes a clickable shortcut to the mapped route. The
+  // existing inline onclick handlers (e.g. row-toggle in /asignar) keep
+  // firing — this just adds a navigation side-effect on top.
+  var navMap = [
+    { sel: '.tbl tbody tr, .full tbody tr, .log-tbl tbody tr, .my-tickets-row, .un-card', href: '/ticket-detail' },
+    { sel: '.tech-tbl tbody tr, .suc-card', href: '/tickets' },
+    { sel: '.kb-tbl tbody tr', href: '/kb' },
+  ];
+
+  function wireClick(el, href) {
+    if (el.tagName === 'A' || el.dataset.protoWired === '1') return;
+    el.dataset.protoWired = '1';
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function (e) {
+      if (e.target.closest('a, button, input, select, textarea, label')) return;
+      location.href = href;
+    });
+  }
+
+  function wireAll() {
+    navMap.forEach(function (m) {
+      document.querySelectorAll(m.sel).forEach(function (el) {
+        wireClick(el, m.href);
+      });
+    });
+
+    // Context-specific: KB suggestion cards in ticket-detail right rail
+    document.querySelectorAll('.rail-block').forEach(function (rb) {
+      var h = rb.querySelector('.rail-h h4');
+      if (h && h.textContent.trim() === 'Base de conocimiento') {
+        rb.querySelectorAll('.rail-b > div > div').forEach(function (card) {
+          wireClick(card, '/kb');
+        });
+      }
+    });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', render);
+    document.addEventListener('DOMContentLoaded', function () {
+      render();
+      wireAll();
+    });
   } else {
     render();
+    wireAll();
   }
 })();

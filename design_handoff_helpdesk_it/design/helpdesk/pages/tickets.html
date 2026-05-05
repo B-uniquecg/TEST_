@@ -452,6 +452,16 @@
         newBtn.textContent = '+ Reportar nueva situación';
         actions.appendChild(newBtn);
       }
+      // Hide IT-only toolbar items: Vista / Exportar / + Nuevo ticket
+      var toolbarRight = document.querySelector('.toolbar .right');
+      if (toolbarRight) toolbarRight.style.display = 'none';
+      // Hide IT-team filter chips that don't apply to an empleado
+      document.querySelectorAll('.toolbar .chip').forEach(function (chip) {
+        var label = chip.textContent.trim();
+        if (label.indexOf('Equipo') === 0 || label.indexOf('Sin asignar') === 0 || label.indexOf('SLA en riesgo') === 0 || label.indexOf('Mis tickets') === 0) {
+          chip.style.display = 'none';
+        }
+      });
     }
     clearChildren(tbody);
     if (tickets.length === 0) {

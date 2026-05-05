@@ -668,47 +668,43 @@
     return Math.floor(h / 24) + 'd';
   }
 
-  function buildNotifs(tickets, role, me) {
+  function buildNotifs(tickets, role, me, opts) {
+    opts = opts || {};
+    var windowDays = opts.windowDays || 7;
+    var windowMs = windowDays * 24 * 3600 * 1000;
+    var limit = opts.limit;
     var notifs = [];
+    var inWindow = function (iso) { return (Date.now() - new Date(iso).getTime()) < windowMs; };
+
     if (role === 'admin' && me && me.id) {
       tickets.filter(function (t) { return t.empleadoId === me.id; }).forEach(function (t) {
-        if (t.comments && t.comments.length) {
-          for (var i = t.comments.length - 1; i >= 0; i--) {
-            var c = t.comments[i];
-            if (c.role === 'it' && c.type === 'message') {
-              notifs.push({ type: 'comment', ticketId: t.id, title: c.author + ' respondió a tu ticket',
-                desc: c.body.slice(0, 100) + (c.body.length > 100 ? '…' : ''), createdAt: c.createdAt });
-              break;
-            }
+        (t.comments || []).forEach(function (c) {
+          if (c.role === 'it' && c.type === 'message' && inWindow(c.createdAt)) {
+            notifs.push({ type: 'comment', ticketId: t.id, title: c.author + ' respondió a tu ticket',
+              desc: c.body.slice(0, 140) + (c.body.length > 140 ? '…' : ''), createdAt: c.createdAt });
           }
-        }
-        if (t.status === 'Resuelto' && (Date.now() - new Date(t.updatedAt).getTime()) < 7 * 24 * 3600000) {
+          if (c.role === 'system' && (c.body.indexOf('asignado') > -1 || c.body.indexOf('asignó') > -1) && inWindow(c.createdAt)) {
+            notifs.push({ type: 'assigned', ticketId: t.id, title: 'Ticket asignado',
+              desc: 'Asignado a ' + (t.assigneeName || 'IT'), createdAt: c.createdAt });
+          }
+        });
+        if ((t.status === 'Resuelto' || t.status === 'Cerrado') && inWindow(t.updatedAt)) {
           notifs.push({ type: 'resolved', ticketId: t.id, title: 'Tu ticket fue resuelto',
             desc: t.summary, createdAt: t.updatedAt });
-        }
-        if (t.assigneeId && t.status !== 'Resuelto' && t.status !== 'Cerrado') {
-          var assignedSys = (t.comments || []).find(function (c) {
-            return c.role === 'system' && (c.body.indexOf('asignado') > -1 || c.body.indexOf('asignó') > -1);
-          });
-          if (assignedSys && (Date.now() - new Date(assignedSys.createdAt).getTime()) < 3 * 24 * 3600000) {
-            notifs.push({ type: 'assigned', ticketId: t.id, title: 'Ticket asignado',
-              desc: 'Asignado a ' + (t.assigneeName || 'IT'), createdAt: assignedSys.createdAt });
-          }
         }
       });
     } else {
       tickets.forEach(function (t) {
-        if (!t.assigneeId && t.status === 'Recibido') {
+        if (!t.assigneeId && t.status === 'Recibido' && inWindow(t.createdAt)) {
           notifs.push({ type: 'new', ticketId: t.id, title: 'Nuevo ticket sin asignar',
             desc: t.summary + ' · ' + (t.empleadoName || ''), createdAt: t.createdAt });
         }
-        if (t.comments && t.comments.length) {
-          var latest = t.comments[t.comments.length - 1];
-          if (latest.role === 'empleado' && (Date.now() - new Date(latest.createdAt).getTime()) < 24 * 3600000) {
-            notifs.push({ type: 'comment', ticketId: t.id, title: latest.author + ' respondió',
-              desc: latest.body.slice(0, 100) + (latest.body.length > 100 ? '…' : ''), createdAt: latest.createdAt });
+        (t.comments || []).forEach(function (c) {
+          if (c.role === 'empleado' && c.type === 'message' && inWindow(c.createdAt)) {
+            notifs.push({ type: 'comment', ticketId: t.id, title: c.author + ' respondió',
+              desc: c.body.slice(0, 140) + (c.body.length > 140 ? '…' : ''), createdAt: c.createdAt });
           }
-        }
+        });
         var ageH = (Date.now() - new Date(t.createdAt).getTime()) / 3600000;
         if (ageH > t.slaHours * 0.75 && t.status !== 'Resuelto' && t.status !== 'Cerrado') {
           notifs.push({ type: 'sla', ticketId: t.id, title: 'SLA en riesgo',
@@ -717,7 +713,45 @@
       });
     }
     notifs.sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
-    return notifs.slice(0, 10);
+    return limit ? notifs.slice(0, limit) : notifs;
+  }
+  window.tgBuildNotifs = buildNotifs;
+  window.tgFmtNotifAge = fmtNotifAge;
+
+  // ----- Sound: a soft Web-Audio "ping" used when a new notification arrives
+  function playNotifPing() {
+    try {
+      if (localStorage.getItem('tg-notif-mute') === '1') return;
+    } catch (e) {}
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      var ctx = new Ctx();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      var now = ctx.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.5);
+      // Second softer ping for a "ping-ping" feel
+      var osc2 = ctx.createOscillator();
+      var gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.value = 1175;
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      gain2.gain.setValueAtTime(0.0001, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.10, now + 0.14);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.55);
+    } catch (e) {}
   }
 
   function renderNotifBell() {
@@ -746,11 +780,21 @@
     var h4 = document.createElement('h4');
     h4.textContent = 'Notificaciones';
     head.appendChild(h4);
+    var headRight = document.createElement('div');
+    headRight.style.cssText = 'display:flex;gap:10px;align-items:center;';
+    var muteBtn = document.createElement('a');
+    muteBtn.className = 'clear';
+    muteBtn.href = '#';
+    muteBtn.id = 'notif-mute';
+    var isMuted = (function () { try { return localStorage.getItem('tg-notif-mute') === '1'; } catch (e) { return false; } })();
+    muteBtn.textContent = isMuted ? '🔇 Sonido off' : '🔊 Sonido on';
+    headRight.appendChild(muteBtn);
     var clearLink = document.createElement('a');
     clearLink.className = 'clear';
     clearLink.href = '#';
     clearLink.textContent = 'Limpiar';
-    head.appendChild(clearLink);
+    headRight.appendChild(clearLink);
+    head.appendChild(headRight);
     dropdown.appendChild(head);
 
     var list = document.createElement('div');
@@ -760,8 +804,8 @@
     var foot = document.createElement('div');
     foot.className = 'notif-foot';
     var allLink = document.createElement('a');
-    allLink.href = (getRole() === 'admin') ? '/tickets' : '/dashboard';
-    allLink.textContent = 'Ver todos los tickets →';
+    allLink.href = '/notificaciones';
+    allLink.textContent = 'Ver todas las notificaciones →';
     foot.appendChild(allLink);
     dropdown.appendChild(foot);
 
@@ -769,15 +813,32 @@
     document.body.appendChild(wrap);
 
     var lastNotifs = [];
+    var seenKeys = new Set();
+    var firstLoad = true;
 
-    async function loadNotifs() {
+    function notifKey(n) { return n.ticketId + '|' + n.type + '|' + n.createdAt; }
+
+    async function loadNotifs(opts) {
+      opts = opts || {};
       if (!window.tg) return;
       try {
         var tickets = await window.tg.tickets();
         if (!Array.isArray(tickets)) return;
         var role = getRole();
         var me = getCurrentUser();
-        lastNotifs = buildNotifs(tickets, role, me);
+        lastNotifs = buildNotifs(tickets, role, me, { windowDays: 7, limit: 10 });
+
+        // Detect new notifications (not seen yet); play ping if any after first load
+        var newKeys = lastNotifs.map(notifKey);
+        var hadNew = false;
+        newKeys.forEach(function (k) {
+          if (!seenKeys.has(k)) {
+            seenKeys.add(k);
+            if (!firstLoad) hadNew = true;
+          }
+        });
+        firstLoad = false;
+        if (hadNew && !opts.silent) playNotifPing();
 
         if (lastNotifs.length > 0) {
           badge.style.display = '';
@@ -852,7 +913,19 @@
       badge.style.display = 'none';
     });
 
-    loadNotifs();
+    muteBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var muted = false;
+      try { muted = localStorage.getItem('tg-notif-mute') === '1'; } catch (er) {}
+      try { localStorage.setItem('tg-notif-mute', muted ? '0' : '1'); } catch (er) {}
+      muteBtn.textContent = muted ? '🔊 Sonido on' : '🔇 Sonido off';
+    });
+
+    loadNotifs({ silent: true });
+    // Poll for new activity every 30s — keeps badge + sound fresh without
+    // requiring a page refresh (in-memory state on Railway is shared).
+    setInterval(function () { loadNotifs(); }, 30000);
   }
 
   function boot() {

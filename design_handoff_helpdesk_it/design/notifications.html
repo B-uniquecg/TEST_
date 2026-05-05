@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>Notificaciones · Tropigas Mesa de Ayuda IT</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<script src="/_dev-nav.js" defer></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100vh;
+    background: var(--paper-2);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 14px;
+  }
+
+  .topbar {
+    height: 56px;
+    background: var(--tg-navy);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 3px solid var(--tg-red);
+  }
+  .topbar a.brand-link { color: inherit; text-decoration: none; cursor: pointer; }
+  .topbar a.brand-link:hover { opacity: 0.85; }
+  .topbar .brand {
+    font-family: var(--font-mono); font-size: 13px;
+    letter-spacing: 0.16em; font-weight: 700;
+  }
+  .topbar .pr-flag {
+    display: inline-block; width: 14px; height: 10px;
+    background: var(--tg-navy); margin-left: 6px; position: relative;
+    border: 1px solid rgba(255,255,255,0.4); vertical-align: 1px;
+  }
+  .topbar .pr-flag::before {
+    content:''; position: absolute; inset:0 0 0 0;
+    background: linear-gradient(to right, var(--tg-red) 0 35%, transparent 35%);
+  }
+  .topbar .sub {
+    font-family: var(--font-ui); font-size: 11px;
+    opacity: 0.7; margin-left: 12px; padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,0.2);
+    letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+  }
+  .topbar .nav-spacer { flex: 1; }
+  .topbar .top-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.06); color: #fff;
+    border-radius: 3px; font-family: var(--font-ui); font-size: 12px;
+    text-decoration: none; cursor: pointer;
+  }
+  .topbar .top-back:hover { background: rgba(255,255,255,0.14); }
+
+  .body { padding: 32px 24px 80px; max-width: 880px; margin: 0 auto; }
+
+  .page-h { margin-bottom: 22px; }
+  .page-h .crumb {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-4); font-weight: 600; margin-bottom: 8px;
+  }
+  .page-h h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 32px; line-height: 1.05; letter-spacing: -0.01em;
+  }
+  .page-h .sub { font-size: 13px; color: var(--ink-4); margin-top: 6px; }
+
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filters button {
+    font-size: 11px; font-weight: 500; padding: 6px 12px;
+    border-radius: 14px; color: var(--ink-3);
+    border: 1px solid var(--line); background: var(--paper);
+    cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .filters button:hover { background: var(--paper-2); }
+  .filters button.on { background: var(--tg-navy); color: #fff; border-color: var(--tg-navy); }
+  .filters button .n { font-family: var(--font-mono); font-size: 10px; opacity: 0.7; }
+
+  .group {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-1);
+  }
+  .group-h {
+    padding: 10px 16px;
+    background: var(--paper-2);
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-4); font-weight: 700;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .item {
+    display: flex; gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    text-decoration: none; color: inherit;
+    cursor: pointer;
+  }
+  .item:last-child { border-bottom: none; }
+  .item:hover { background: var(--paper-2); }
+  .item .ico {
+    width: 34px; height: 34px; flex-shrink: 0;
+    border-radius: 3px; display: grid; place-items: center;
+    font-family: var(--font-mono); font-size: 11px;
+    font-weight: 700; color: #fff; letter-spacing: 0.04em;
+  }
+  .item.t-new      .ico { background: var(--tg-navy); }
+  .item.t-comment  .ico { background: #F59E0B; }
+  .item.t-resolved .ico { background: var(--st-done); }
+  .item.t-sla      .ico { background: var(--tg-red); }
+  .item.t-assigned .ico { background: var(--st-new); }
+
+  .item .body-c { flex: 1; min-width: 0; }
+  .item .top-line {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--ink-4);
+    font-family: var(--font-mono); letter-spacing: 0.04em;
+    margin-bottom: 3px;
+  }
+  .item .top-line .id { color: var(--tg-navy); font-weight: 600; }
+  .item .ttl { font-size: 14px; color: var(--ink); font-weight: 500; margin-bottom: 3px; line-height: 1.4; }
+  .item .desc { font-size: 12px; color: var(--ink-4); line-height: 1.5; }
+
+  .empty {
+    background: var(--paper); border: 1px dashed var(--line);
+    border-radius: 4px; padding: 48px 24px; text-align: center;
+    font-size: 13px; color: var(--ink-4);
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/dashboard" class="brand-link" id="brand-link"><span class="brand">TROPIGAS<span class="pr-flag"></span></span></a>
+    <div class="sub">Notificaciones · últimos 180 días</div>
+    <div class="nav-spacer"></div>
+    <a href="/dashboard" class="top-back" id="top-back">← <span id="top-back-label">Volver al Dashboard</span></a>
+  </div>
+
+  <div class="body">
+    <div class="page-h">
+      <div class="crumb" id="crumb">Tropigas / Notificaciones</div>
+      <h1>Tus notificaciones</h1>
+      <div class="sub" id="subline">Actividad reciente sobre tus tickets · últimos 180 días.</div>
+    </div>
+
+    <div class="filters" id="filters"></div>
+
+    <div id="content">
+      <div class="empty">Cargando notificaciones…</div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    function clearChildren(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function fmtTime(iso) {
+      var d = new Date(iso);
+      return pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+    function dateKey(iso) {
+      var d = new Date(iso);
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+    function dateLabel(key) {
+      var parts = key.split('-');
+      var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+      var today = new Date();
+      var todayKey = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
+      if (key === todayKey) return 'Hoy';
+      var yest = new Date(today.getTime() - 86400000);
+      var yKey = yest.getFullYear() + '-' + pad(yest.getMonth() + 1) + '-' + pad(yest.getDate());
+      if (key === yKey) return 'Ayer';
+      var months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+    }
+    function fmtAge(ms) {
+      var m = Math.floor(ms / 60000);
+      if (m < 1) return 'ahora';
+      if (m < 60) return 'hace ' + m + 'm';
+      var h = Math.floor(m / 60);
+      if (h < 24) return 'hace ' + h + 'h';
+      var d = Math.floor(h / 24);
+      return 'hace ' + d + 'd';
+    }
+
+    var typeLabels = {
+      'all':      'Todas',
+      'comment':  'Mensajes',
+      'assigned': 'Asignaciones',
+      'resolved': 'Resueltas',
+      'new':      'Nuevos',
+      'sla':      'SLA en riesgo',
+    };
+
+    var currentFilter = 'all';
+    var allNotifs = [];
+
+    function buildIco(n) {
+      var d = document.createElement('div');
+      d.className = 'ico';
+      d.textContent = ({ 'new':'NEW','comment':'MSG','resolved':'✓','sla':'!','assigned':'→' })[n.type] || '•';
+      return d;
+    }
+
+    function renderItem(n) {
+      var a = document.createElement('a');
+      a.className = 'item t-' + n.type;
+      a.href = '/ticket-detail?id=' + n.ticketId;
+      a.appendChild(buildIco(n));
+      var body = document.createElement('div');
+      body.className = 'body-c';
+      var topLine = document.createElement('div');
+      topLine.className = 'top-line';
+      var idEl = document.createElement('span');
+      idEl.className = 'id';
+      idEl.textContent = n.ticketId;
+      var when = document.createElement('span');
+      when.textContent = fmtTime(n.createdAt) + ' · ' + fmtAge(Date.now() - new Date(n.createdAt).getTime());
+      topLine.appendChild(idEl);
+      topLine.appendChild(when);
+      body.appendChild(topLine);
+      var ttl = document.createElement('div');
+      ttl.className = 'ttl';
+      ttl.textContent = n.title;
+      body.appendChild(ttl);
+      if (n.desc) {
+        var desc = document.createElement('div');
+        desc.className = 'desc';
+        desc.textContent = n.desc;
+        body.appendChild(desc);
+      }
+      a.appendChild(body);
+      return a;
+    }
+
+    function renderFilters() {
+      var bar = document.getElementById('filters');
+      clearChildren(bar);
+      var counts = { all: allNotifs.length };
+      allNotifs.forEach(function (n) { counts[n.type] = (counts[n.type] || 0) + 1; });
+      var order = ['all', 'comment', 'assigned', 'resolved', 'new', 'sla'];
+      order.forEach(function (k) {
+        if (k !== 'all' && !counts[k]) return;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = currentFilter === k ? 'on' : '';
+        b.appendChild(document.createTextNode(typeLabels[k] || k));
+        var n = document.createElement('span');
+        n.className = 'n';
+        n.textContent = counts[k] || 0;
+        b.appendChild(n);
+        b.addEventListener('click', function () {
+          currentFilter = k;
+          renderFilters();
+          renderList();
+        });
+        bar.appendChild(b);
+      });
+    }
+
+    function renderList() {
+      var content = document.getElementById('content');
+      clearChildren(content);
+      var filtered = currentFilter === 'all'
+        ? allNotifs
+        : allNotifs.filter(function (n) { return n.type === currentFilter; });
+      if (!filtered.length) {
+        var empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No hay notificaciones en este filtro.';
+        content.appendChild(empty);
+        return;
+      }
+      var groups = {};
+      var keyOrder = [];
+      filtered.forEach(function (n) {
+        var k = dateKey(n.createdAt);
+        if (!groups[k]) { groups[k] = []; keyOrder.push(k); }
+        groups[k].push(n);
+      });
+      keyOrder.forEach(function (k) {
+        var g = document.createElement('div');
+        g.className = 'group';
+        var h = document.createElement('div');
+        h.className = 'group-h';
+        h.textContent = dateLabel(k) + ' · ' + groups[k].length + ' evento' + (groups[k].length === 1 ? '' : 's');
+        g.appendChild(h);
+        groups[k].forEach(function (n) { g.appendChild(renderItem(n)); });
+        content.appendChild(g);
+      });
+    }
+
+    function showError(msg) {
+      var content = document.getElementById('content');
+      clearChildren(content);
+      var err = document.createElement('div');
+      err.className = 'empty';
+      err.textContent = msg;
+      content.appendChild(err);
+    }
+
+    function init() {
+      if (!window.tg || !window.tgBuildNotifs || !window.__tgGetCurrentUser) {
+        setTimeout(init, 30);
+        return;
+      }
+      var role = (function () { try { return localStorage.getItem('tg-role') || 'admin'; } catch (e) { return 'admin'; } })();
+      var me = window.__tgGetCurrentUser();
+
+      if (role === 'admin') {
+        document.getElementById('crumb').textContent = 'Tropigas / Mis notificaciones';
+        document.getElementById('subline').textContent = 'Actividad sobre tus tickets reportados a UCG IT · últimos 180 días.';
+        document.getElementById('top-back').href = '/dashboard';
+        document.getElementById('top-back-label').textContent = 'Volver al Dashboard';
+        document.getElementById('brand-link').href = '/dashboard';
+      } else {
+        document.getElementById('crumb').textContent = 'UCG · Mesa de Ayuda IT / Notificaciones';
+        document.getElementById('subline').textContent = 'Actividad operacional · cola, mensajes, SLA · últimos 180 días.';
+      }
+
+      window.tg.tickets().then(function (tickets) {
+        if (!Array.isArray(tickets)) {
+          showError('No se pudieron cargar los tickets.');
+          return;
+        }
+        allNotifs = window.tgBuildNotifs(tickets, role, me, { windowDays: 180 });
+        renderFilters();
+        renderList();
+      }).catch(function () {
+        showError('No se pudieron cargar las notificaciones.');
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -756,7 +756,14 @@ function showTab(id, btn) {
     var role = getRole();
     var isAdmin = role === 'admin';
 
-    // Banner action buttons: hide IT-only when admin
+    // Crumb: admin's natural origin is /portal, not /tickets
+    var crumbLink = document.querySelector('.tk-crumb a');
+    if (crumbLink && isAdmin) {
+      crumbLink.href = '/portal';
+      crumbLink.textContent = 'Mi Portal';
+    }
+
+    // Banner action buttons: hide IT-only when admin; relabel "← Cola"
     var bannerBtns = document.querySelectorAll('.tk-banner .btn');
     bannerBtns.forEach(function (btn) {
       var label = btn.textContent.trim();
@@ -765,6 +772,10 @@ function showTab(id, btn) {
         btn.style.display = 'none';
       } else {
         btn.style.display = '';
+      }
+      if (isAdmin && label === '← Cola' && btn.tagName === 'A') {
+        btn.href = '/portal';
+        btn.textContent = '← Mi Portal';
       }
     });
 

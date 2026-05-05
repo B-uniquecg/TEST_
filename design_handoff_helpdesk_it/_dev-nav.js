@@ -172,6 +172,13 @@
     return;
   }
 
+  // Hide IT-only chrome for admin (top tab strip + footer "Cola IT" stat)
+  if (getRole() === 'admin') {
+    var hideAdminStyle = document.createElement('style');
+    hideAdminStyle.textContent = '.it-tabs{display:none !important}';
+    document.head.appendChild(hideAdminStyle);
+  }
+
   var style = document.createElement('style');
   style.textContent = [
     /* dev-nav */

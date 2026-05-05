@@ -3,7 +3,8 @@
   window.__devNavLoaded = true;
 
   var pages = [
-    { href: '/',              label: 'Empleado' },
+    { href: '/',              label: 'Login' },
+    { href: '/portal',        label: 'Empleado' },
     { href: '/dashboard',     label: 'Dashboard' },
     { href: '/tickets',       label: 'Tickets' },
     { href: '/asignar',       label: 'Asignar' },

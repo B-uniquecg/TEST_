@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es-PR">
+<head>
+<meta charset="utf-8" />
+<title>Tropigas · Mesa de Ayuda IT — Acceso</title>
+<link rel="stylesheet" href="/design/colors_and_type.css" />
+<script src="/_dev-nav.js" defer></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100vh;
+    background: var(--paper-2);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 14px;
+  }
+  body {
+    display: grid;
+    place-items: center;
+    padding: 32px 24px 80px;
+  }
+
+  .frame {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .brand-flag {
+    width: 18px; height: 18px;
+    background: var(--tg-navy);
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--tg-navy);
+  }
+  .brand-flag::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 0 0;
+    background: linear-gradient(to right, var(--tg-red) 0 35%, transparent 35%);
+  }
+  .brand-flag::after {
+    content: '★';
+    position: absolute;
+    color: #fff;
+    font-size: 9px;
+    line-height: 1;
+    top: 4px; left: 3px;
+  }
+  .brand-mark {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--tg-navy);
+    font-weight: 700;
+  }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--shadow-1);
+    padding: 44px 40px 36px;
+  }
+
+  .crumb {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--tg-red);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 30px;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .sub {
+    font-size: 13px;
+    color: var(--ink-4);
+    margin-bottom: 28px;
+  }
+
+  .role-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .role-btn + .role-btn { margin-top: 10px; }
+  .role-btn:hover {
+    border-color: var(--tg-navy);
+    box-shadow: var(--shadow-2);
+    transform: translateY(-1px);
+  }
+  .role-btn:focus { outline: none; box-shadow: 0 0 0 2px rgba(28, 47, 92, 0.18); }
+
+  .role-btn .ico {
+    width: 42px; height: 42px;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .role-btn.it .ico    { background: var(--tg-navy); color: #fff; }
+  .role-btn.admin .ico { background: var(--tg-red);  color: #fff; }
+
+  .role-btn .text { flex: 1; min-width: 0; }
+  .role-btn .role-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .role-btn .role-desc {
+    font-size: 12px;
+    color: var(--ink-4);
+    line-height: 1.4;
+  }
+  .role-btn .arrow {
+    font-family: var(--font-mono);
+    color: var(--ink-5);
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: color 0.12s ease, transform 0.12s ease;
+  }
+  .role-btn:hover .arrow {
+    color: var(--tg-red);
+    transform: translateX(2px);
+  }
+
+  .foot {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-5);
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+  }
+  .foot .v { color: var(--ink-4); }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="brand-row">
+      <span class="brand-flag" aria-hidden="true"></span>
+      <span class="brand-mark">Tropigas Puerto Rico</span>
+    </div>
+
+    <div class="card">
+      <div class="crumb">[ Mesa de Ayuda IT · UCG ]</div>
+      <h1>¿Quién entra hoy?</h1>
+      <p class="sub">Selecciona tu rol para continuar al sistema.</p>
+
+      <a href="/dashboard" class="role-btn it">
+        <div class="ico">IT</div>
+        <div class="text">
+          <div class="role-name">UCG · Mesa de Ayuda IT</div>
+          <div class="role-desc">Equipo de soporte · cola, asignación y resolución</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a href="/portal" class="role-btn admin">
+        <div class="ico">AD</div>
+        <div class="text">
+          <div class="role-name">Administración</div>
+          <div class="role-desc">Empleados Tropigas · reportar problema a IT</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
+
+      <div class="foot">
+        <span>SM v2.0</span>
+        <span class="v">UCG · 2026</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -10,7 +10,8 @@ const DESIGN_ROOT = path.join(__dirname, 'design_handoff_helpdesk_it');
 app.use(express.static(DESIGN_ROOT));
 
 const pages = {
-  '/': 'design/helpdesk/Helpdesk Screens.html',
+  '/': 'design/login.html',
+  '/portal': 'design/helpdesk/Helpdesk Screens.html',
   '/dashboard': 'design/helpdesk/pages/dashboard.html',
   '/tickets': 'design/helpdesk/pages/tickets.html',
   '/asignar': 'design/helpdesk/pages/asignar.html',

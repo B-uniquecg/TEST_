@@ -510,7 +510,17 @@
     }
     var pageActions = document.querySelector('.page-h .actions');
     if (pageActions && isAdmin) {
-      pageActions.style.display = 'none';
+      while (pageActions.firstChild) pageActions.removeChild(pageActions.firstChild);
+      var verTickets = document.createElement('a');
+      verTickets.href = '/tickets';
+      verTickets.className = 'btn';
+      verTickets.textContent = 'Ver mis tickets →';
+      pageActions.appendChild(verTickets);
+      var nuevo = document.createElement('a');
+      nuevo.href = '/portal';
+      nuevo.className = 'btn primary';
+      nuevo.textContent = '+ Reportar nuevo problema';
+      pageActions.appendChild(nuevo);
     }
 
     // KPIs

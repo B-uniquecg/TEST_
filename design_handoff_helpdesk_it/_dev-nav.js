@@ -162,21 +162,60 @@
     { href: '/settings',      label: 'Settings' },
   ];
   var pages = (getRole() === 'admin') ? pagesAdmin : pagesIT;
-  var itOnlyRoutes = ['/tickets', '/asignar', '/kb', '/reportes'];
+  // Admin can see /tickets (own only) and /dashboard. /asignar /kb /reportes still IT-only.
+  var itOnlyRoutes = ['/asignar', '/kb', '/reportes'];
 
   var here = (location.pathname.replace(/\/+$/, '') || '/');
 
   // Role-based redirect: admin should not access IT-only routes
   if (getRole() === 'admin' && itOnlyRoutes.indexOf(here) > -1) {
-    location.replace('/portal');
+    location.replace('/dashboard');
     return;
   }
 
-  // Hide IT-only chrome for admin (top tab strip + footer "Cola IT" stat)
-  if (getRole() === 'admin') {
-    var hideAdminStyle = document.createElement('style');
-    hideAdminStyle.textContent = '.it-tabs{display:none !important}';
-    document.head.appendChild(hideAdminStyle);
+  // Replace IT tab strip with admin-specific tabs when role=admin
+  function injectAdminTabs() {
+    if (getRole() !== 'admin') return;
+    var itTabs = document.querySelector('.it-tabs');
+    if (!itTabs) return;
+    while (itTabs.firstChild) itTabs.removeChild(itTabs.firstChild);
+
+    var adminTabs = [
+      { href: '/dashboard', label: 'Mi Dashboard', num: '[01]' },
+      { href: '/tickets',   label: 'Mis Tickets', num: '[02]' },
+    ];
+    adminTabs.forEach(function (t) {
+      var a = document.createElement('a');
+      a.href = t.href;
+      a.className = 'it-tab' + (here === t.href ? ' on' : '');
+      var n = document.createElement('span');
+      n.className = 'tab-num';
+      n.textContent = t.num;
+      a.appendChild(n);
+      a.appendChild(document.createTextNode(t.label));
+      itTabs.appendChild(a);
+    });
+
+    var spacer = document.createElement('div');
+    spacer.className = 'it-tabs-spacer';
+    itTabs.appendChild(spacer);
+
+    var newBtn = document.createElement('a');
+    newBtn.href = '/portal';
+    newBtn.className = 'it-tab';
+    newBtn.style.cssText = 'background:var(--tg-red);color:#fff;font-weight:700;';
+    var plus = document.createElement('span');
+    plus.className = 'tab-num';
+    plus.style.color = '#fff';
+    plus.textContent = '+';
+    newBtn.appendChild(plus);
+    newBtn.appendChild(document.createTextNode('Crear ticket'));
+    itTabs.appendChild(newBtn);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectAdminTabs);
+  } else {
+    injectAdminTabs();
   }
 
   var style = document.createElement('style');

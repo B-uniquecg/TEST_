@@ -429,6 +429,29 @@
       renderEmpty(tbody, 'Error de servidor — intenta recargar.');
       return;
     }
+
+    // Role filter — admin sees only their own tickets
+    var role = (function () { try { return localStorage.getItem('tg-role') || 'admin'; } catch (e) { return 'admin'; } })();
+    var me = window.__tgGetCurrentUser ? window.__tgGetCurrentUser() : null;
+    if (role === 'admin' && me && me.id) {
+      tickets = tickets.filter(function (t) { return t.empleadoId === me.id; });
+      document.title = 'Tropigas · Mis Tickets';
+      var crumb = document.querySelector('.page-h .crumb');
+      if (crumb) crumb.textContent = 'Tropigas / Mis Tickets';
+      var h1 = document.querySelector('.page-h h1');
+      if (h1) h1.textContent = 'Mis tickets';
+      var sub = document.querySelector('.page-h .sub');
+      if (sub) sub.textContent = 'Historial completo de tus reportes a UCG IT.';
+      var actions = document.querySelector('.page-h .actions');
+      if (actions) {
+        while (actions.firstChild) actions.removeChild(actions.firstChild);
+        var newBtn = document.createElement('a');
+        newBtn.href = '/portal';
+        newBtn.className = 'btn primary';
+        newBtn.textContent = '+ Reportar nuevo problema';
+        actions.appendChild(newBtn);
+      }
+    }
     clearChildren(tbody);
     if (tickets.length === 0) {
       renderEmpty(tbody, 'No hay tickets para mostrar.');

@@ -188,12 +188,28 @@
   @media (max-width: 800px) {
     .grid, .row-2 { grid-template-columns: 1fr; }
   }
+
+  .topbar a.brand-link { color: inherit; text-decoration: none; cursor: pointer; }
+  .topbar a.brand-link:hover { opacity: 0.85; }
+  .topbar .nav-spacer { flex: 1; }
+  .topbar .top-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.06); color: #fff;
+    border-radius: 3px; font-family: var(--font-ui); font-size: 12px;
+    text-decoration: none; cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  .topbar .top-back:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.45); }
+  .topbar .top-back .arrow { font-family: var(--font-mono); }
 </style>
 </head>
 <body>
   <div class="topbar">
-    <div class="brand">TROPIGAS<span class="pr-flag"></span></div>
+    <a href="/dashboard" class="brand brand-link" id="brand-link">TROPIGAS<span class="pr-flag"></span></a>
     <div class="sub">Configuración · Mi cuenta</div>
+    <div class="nav-spacer"></div>
+    <a href="/dashboard" class="top-back" id="top-back"><span class="arrow">←</span><span id="top-back-label">Volver al Dashboard</span></a>
   </div>
 
   <div class="body">
@@ -323,6 +339,15 @@
           if (window.__tgLogout) window.__tgLogout();
           else location.href = '/';
         });
+
+        var backHref = u.role === 'admin' ? '/portal' : '/dashboard';
+        var backLabel = u.role === 'admin' ? 'Volver a Mi Portal' : 'Volver al Dashboard';
+        var backEl = document.getElementById('top-back');
+        if (backEl) backEl.href = backHref;
+        var backLbl = document.getElementById('top-back-label');
+        if (backLbl) backLbl.textContent = backLabel;
+        var brandEl = document.getElementById('brand-link');
+        if (brandEl) brandEl.href = backHref;
       }
       init();
     })();

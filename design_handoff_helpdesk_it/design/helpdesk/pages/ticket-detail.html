@@ -779,6 +779,52 @@ function showTab(id, btn) {
       }
     });
 
+    // Read-only mode for admin: visible but cannot alter the working panes
+    // (Solución is where IT documents the technical work — admin can read but not edit)
+    var readOnlyPanes = ['pane-sol'];
+    readOnlyPanes.forEach(function (paneId) {
+      var pane = document.getElementById(paneId);
+      if (!pane) return;
+      var existingBanner = pane.querySelector('.ro-banner');
+      if (isAdmin) {
+        // Disable all form controls
+        pane.querySelectorAll('input, select, textarea').forEach(function (el) {
+          el.disabled = true;
+          el.style.cursor = 'not-allowed';
+        });
+        // Hide all buttons (action triggers)
+        pane.querySelectorAll('button').forEach(function (b) { b.style.display = 'none'; });
+        // Block clicks on the pane content (prevents adding steps, etc.)
+        pane.style.pointerEvents = 'auto';
+        pane.querySelectorAll('[onclick]').forEach(function (el) {
+          el.dataset.originalClick = el.getAttribute('onclick');
+          el.removeAttribute('onclick');
+          el.style.pointerEvents = 'none';
+        });
+        // Add a subtle banner
+        if (!existingBanner) {
+          var ro = document.createElement('div');
+          ro.className = 'ro-banner';
+          ro.style.cssText = 'background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;padding:10px 14px;border-radius:3px;font-size:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px;';
+          var icon = document.createElement('span');
+          icon.style.cssText = 'font-family:var(--font-mono);font-weight:700;';
+          icon.textContent = 'ⓘ';
+          var msg = document.createElement('span');
+          msg.textContent = 'Solo lectura · UCG IT documenta el diagnóstico y la solución. Para reportar nueva información, usa la pestaña Conversación.';
+          ro.appendChild(icon);
+          ro.appendChild(msg);
+          pane.insertBefore(ro, pane.firstChild);
+        }
+      } else if (existingBanner) {
+        existingBanner.parentNode.removeChild(existingBanner);
+        pane.querySelectorAll('input, select, textarea').forEach(function (el) {
+          el.disabled = false;
+          el.style.cursor = '';
+        });
+        pane.querySelectorAll('button').forEach(function (b) { b.style.display = ''; });
+      }
+    });
+
     // Composer: restrict modes for admin
     var composer = document.querySelector('.composer');
     if (composer) {

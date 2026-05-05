@@ -173,6 +173,14 @@
     return;
   }
 
+  // Hide IT-only topbar stats (Sistema/SLA/Hora AST) for admin — they
+  // don't apply to empleados and they collide with the floating search bar
+  if (getRole() === 'admin') {
+    var hideMetaStyle = document.createElement('style');
+    hideMetaStyle.textContent = '.top-meta{display:none !important}';
+    document.head.appendChild(hideMetaStyle);
+  }
+
   // Replace IT tab strip with admin-specific tabs when role=admin
   function injectAdminTabs() {
     if (getRole() !== 'admin') return;
@@ -199,6 +207,18 @@
     var spacer = document.createElement('div');
     spacer.className = 'it-tabs-spacer';
     itTabs.appendChild(spacer);
+
+    var newBtn = document.createElement('a');
+    newBtn.href = '/portal';
+    newBtn.className = 'it-tab';
+    newBtn.style.cssText = 'background:var(--tg-red);color:#fff;font-weight:700;';
+    var plus = document.createElement('span');
+    plus.className = 'tab-num';
+    plus.style.color = '#fff';
+    plus.textContent = '+';
+    newBtn.appendChild(plus);
+    newBtn.appendChild(document.createTextNode('Reportar nueva situación'));
+    itTabs.appendChild(newBtn);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', injectAdminTabs);

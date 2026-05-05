@@ -82,12 +82,12 @@
     <a href="/kb" class="it-tab"><span class="tab-num">[04]</span>Base de Conocimiento <span class="tab-c">38</span></a>
     <a href="/reportes" class="it-tab"><span class="tab-num">[05]</span>Reportes</a>
     <div class="it-tabs-spacer"></div>
-    <div class="it-tabs-meta"><span>Mostrando <span class="pip">14 / 142</span></span></div>
+    <div class="it-tabs-meta"><span>Mostrando <span class="pip" id="meta-count">…</span></span></div>
   </div>
 
   <div class="toolbar">
     <div class="search"><input type="search" placeholder="Buscar por ID, empleado, sucursal, descripción…" /></div>
-    <button class="chip on">Todos <span class="n">142</span></button>
+    <button class="chip on">Todos <span class="n" id="chip-todos">…</span></button>
     <button class="chip">Mis tickets <span class="n">04</span></button>
     <button class="chip">Equipo <span class="n">14</span></button>
     <button class="chip">Sin asignar <span class="n">02</span></button>
@@ -400,21 +400,53 @@
     return tr;
   }
 
+  function renderEmpty(tbody, msg) {
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.colSpan = 10;
+    td.style.cssText = 'padding:48px;text-align:center;color:var(--ink-4);font-size:13px;';
+    td.textContent = msg;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
   async function render() {
     if (!window.tg) { setTimeout(render, 30); return; }
     var tbody = document.getElementById('ticket-rows');
     if (!tbody) return;
-    var tickets = await window.tg.tickets();
+    var tickets;
+    try {
+      tickets = await window.tg.tickets();
+    } catch (e) {
+      console.error('Error cargando tickets:', e);
+      clearChildren(tbody);
+      renderEmpty(tbody, 'Error cargando tickets — recarga la página.');
+      return;
+    }
+    if (!Array.isArray(tickets)) {
+      console.error('Respuesta inválida de /api/tickets:', tickets);
+      clearChildren(tbody);
+      renderEmpty(tbody, 'Error de servidor — intenta recargar.');
+      return;
+    }
     clearChildren(tbody);
-    tickets.forEach(function (t) { tbody.appendChild(buildRow(t)); });
+    if (tickets.length === 0) {
+      renderEmpty(tbody, 'No hay tickets para mostrar.');
+    } else {
+      tickets.forEach(function (t) {
+        try { tbody.appendChild(buildRow(t)); }
+        catch (e) { console.error('Falló render de ticket', t && t.id, e); }
+      });
+    }
 
     var pag = document.getElementById('pag-info');
-    if (pag) {
-      pag.textContent = 'Mostrando ' + tickets.length + ' de ' + tickets.length + ' tickets · ordenado por recibido (desc)';
-    }
+    if (pag) pag.textContent = 'Mostrando ' + tickets.length + ' de ' + tickets.length + ' tickets · ordenado por recibido (desc)';
     var meta = document.getElementById('foot-meta');
     if (meta) meta.textContent = 'REL 1.1.0 · ' + tickets.length + ' tickets en sistema';
-
+    var metaCount = document.getElementById('meta-count');
+    if (metaCount) metaCount.textContent = tickets.length + ' / ' + tickets.length;
+    var chipTodos = document.getElementById('chip-todos');
+    if (chipTodos) chipTodos.textContent = tickets.length;
     var tabCount = document.querySelector('.it-tab.on .tab-c');
     if (tabCount) tabCount.textContent = tickets.length;
   }

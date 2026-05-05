@@ -461,8 +461,24 @@
 
   async function render() {
     if (!window.tg) { setTimeout(render, 30); return; }
-    var tickets = await window.tg.tickets();
-    var stats   = await window.tg.stats();
+    var tickets, stats;
+    try {
+      tickets = await window.tg.tickets();
+      stats = await window.tg.stats();
+    } catch (e) {
+      console.error('Error cargando dashboard:', e);
+      return;
+    }
+    if (!Array.isArray(tickets)) {
+      console.error('Respuesta inválida de /api/tickets:', tickets);
+      return;
+    }
+    if (!stats || typeof stats !== 'object') {
+      console.error('Respuesta inválida de /api/stats:', stats);
+      return;
+    }
+    if (!stats.byStatus) stats.byStatus = {};
+    if (!Array.isArray(stats.techLoad)) stats.techLoad = [];
 
     // KPIs
     var todayMs = 24 * 3600 * 1000;

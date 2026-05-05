@@ -405,11 +405,20 @@
 
   async function load() {
     if (!window.tg) { setTimeout(load, 30); return; }
-    var data = await Promise.all([window.tg.tickets(), window.tg.stats()]);
-    var tickets = data[0];
-    var stats = data[1];
+    var tickets, stats, state;
+    try {
+      var data = await Promise.all([window.tg.tickets(), window.tg.stats(), window.tg.init()]);
+      tickets = data[0]; stats = data[1]; state = data[2];
+    } catch (e) {
+      console.error('Error cargando asignar:', e);
+      return;
+    }
+    if (!Array.isArray(tickets) || !stats || !state || !Array.isArray(state.users)) {
+      console.error('Respuestas inválidas:', { tickets: tickets, stats: stats, state: state });
+      return;
+    }
+    if (!Array.isArray(stats.techLoad)) stats.techLoad = [];
     unassigned = tickets.filter(function (t) { return !t.assigneeId && t.status !== 'Resuelto' && t.status !== 'Cerrado'; });
-    var state = await window.tg.init();
     var techUsers = state.users.filter(function (u) { return u.role === 'it'; });
     techs = techUsers.map(function (u) {
       var loadEntry = stats.techLoad.find(function (l) { return l.id === u.id; }) || { open: 0, closed: 0 };

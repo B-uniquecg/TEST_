@@ -209,7 +209,7 @@
     plus.style.color = '#fff';
     plus.textContent = '+';
     newBtn.appendChild(plus);
-    newBtn.appendChild(document.createTextNode('Crear ticket'));
+    newBtn.appendChild(document.createTextNode('Reportar nueva situación'));
     itTabs.appendChild(newBtn);
   }
   if (document.readyState === 'loading') {
